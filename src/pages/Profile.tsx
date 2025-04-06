@@ -9,6 +9,8 @@ import ItemCard from '@/components/ItemCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSavedItems } from '@/hooks/useSavedItems';
+import { motion } from 'framer-motion';
 
 type ProfileData = {
   id: string;
@@ -31,8 +33,10 @@ type ItemData = {
 const Profile = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { savedItems } = useSavedItems();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [myListings, setMyListings] = useState<ItemData[]>([]);
+  const [savedListings, setSavedListings] = useState<ItemData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Redirect to login if not authenticated
@@ -80,6 +84,30 @@ const Profile = () => {
       loadProfile();
     }
   }, [user, toast]);
+
+  // Fetch saved items when savedItems ids change
+  useEffect(() => {
+    async function fetchSavedListings() {
+      if (!savedItems.length) {
+        setSavedListings([]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('items')
+          .select('*')
+          .in('id', savedItems);
+        
+        if (error) throw error;
+        setSavedListings(data || []);
+      } catch (error) {
+        console.error('Error fetching saved listings:', error);
+      }
+    }
+
+    fetchSavedListings();
+  }, [savedItems]);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -103,36 +131,42 @@ const Profile = () => {
     <PageLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Profile Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>My Profile</CardTitle>
-            <Button variant="outline" onClick={signOut}>Log Out</Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-marketplace-purple/10 flex items-center justify-center text-marketplace-purple font-semibold text-xl">
-                  {displayName.charAt(0).toUpperCase()}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>My Profile</CardTitle>
+              <Button variant="outline" onClick={signOut}>Log Out</Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-full bg-marketplace-purple/10 flex items-center justify-center text-marketplace-purple font-semibold text-xl">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{displayName}</h3>
+                    <p className="text-sm text-gray-500">Member since {joinedDate}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{displayName}</h3>
-                  <p className="text-sm text-gray-500">Member since {joinedDate}</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="font-medium">{user.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Phone</p>
+                    <p className="font-medium">{profile?.phone || 'Not provided'}</p>
+                  </div>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-medium">{user.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-medium">{profile?.phone || 'Not provided'}</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
         
         {/* Listings Tabs */}
         <Tabs defaultValue="myListings" className="w-full">
@@ -169,14 +203,30 @@ const Profile = () => {
           </TabsContent>
           
           <TabsContent value="saved" className="pt-4">
-            <div className="text-center py-12">
-              <p className="text-gray-500">You haven't saved any items yet.</p>
-              <div className="mt-4">
-                <Link to="/">
-                  <Button>Browse Listings</Button>
-                </Link>
+            {savedListings.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {savedListings.map(item => (
+                  <ItemCard 
+                    key={item.id} 
+                    id={item.id}
+                    title={item.title} 
+                    price={item.price} 
+                    image={item.image_url || 'https://via.placeholder.com/300'} 
+                    location={item.location}
+                    date={new Date(item.created_at).toLocaleDateString()} 
+                  />
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-500">You haven't saved any items yet.</p>
+                <div className="mt-4">
+                  <Link to="/">
+                    <Button>Browse Listings</Button>
+                  </Link>
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

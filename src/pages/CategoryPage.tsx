@@ -1,0 +1,157 @@
+
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import PageLayout from '@/components/layout/PageLayout';
+import { supabase } from '@/integrations/supabase/client';
+import ItemCard from '@/components/ItemCard';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+type ItemData = {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string | null;
+  location: string;
+  created_at: string;
+  category: string;
+};
+
+const sortOptions = [
+  { label: "Newest first", value: "newest" },
+  { label: "Oldest first", value: "oldest" },
+  { label: "Price: Low to High", value: "price_asc" },
+  { label: "Price: High to Low", value: "price_desc" }
+];
+
+const CategoryPage = () => {
+  const { categoryName } = useParams<{ categoryName: string }>();
+  const [items, setItems] = useState<ItemData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sortBy, setSortBy] = useState('newest');
+  const { toast } = useToast();
+
+  const categoryDisplayName = categoryName ? 
+    categoryName.charAt(0).toUpperCase() + categoryName.slice(1) : 
+    'Category';
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      if (!categoryName) return;
+      
+      setIsLoading(true);
+      try {
+        let query = supabase
+          .from('items')
+          .select('*')
+          .eq('category', categoryName.toLowerCase());
+        
+        // Apply sorting
+        switch (sortBy) {
+          case 'newest':
+            query = query.order('created_at', { ascending: false });
+            break;
+          case 'oldest':
+            query = query.order('created_at', { ascending: true });
+            break;
+          case 'price_asc':
+            query = query.order('price', { ascending: true });
+            break;
+          case 'price_desc':
+            query = query.order('price', { ascending: false });
+            break;
+          default:
+            query = query.order('created_at', { ascending: false });
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        setItems(data || []);
+      } catch (error: any) {
+        console.error('Error fetching items:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load category items",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchItems();
+  }, [categoryName, sortBy, toast]);
+  
+  return (
+    <PageLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <Link to="/" className="flex items-center text-marketplace-purple mb-2">
+              <ArrowLeft size={16} className="mr-1" />
+              <span className="text-sm">Back to Home</span>
+            </Link>
+            <h1 className="text-2xl font-bold">{categoryDisplayName}</h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500 whitespace-nowrap">Sort by:</span>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        {/* Items Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, index) => (
+              <div 
+                key={index} 
+                className="animate-pulse bg-gray-100 rounded-lg aspect-[4/3]"
+              ></div>
+            ))}
+          </div>
+        ) : items.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {items.map(item => (
+              <ItemCard 
+                key={item.id} 
+                id={item.id}
+                title={item.title} 
+                price={item.price} 
+                image={item.image_url || 'https://via.placeholder.com/300'} 
+                location={item.location}
+                date={new Date(item.created_at).toLocaleDateString()} 
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-lg text-gray-500">No items found in this category.</p>
+            <div className="mt-4">
+              <Link to="/add-listing">
+                <Button>Add New Listing</Button>
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </PageLayout>
+  );
+};
+
+export default CategoryPage;

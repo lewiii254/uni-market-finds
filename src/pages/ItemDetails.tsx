@@ -1,57 +1,189 @@
 
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import PageLayout from '@/components/layout/PageLayout';
 import { Card } from '@/components/ui/card';
+import { ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import SaveButton from '@/components/SaveButton';
+import { motion } from 'framer-motion';
 
-// Mock data - in a real app, you'd fetch this based on the ID
-const itemDetails = {
-  id: '1',
-  title: 'MacBook Pro 2019',
-  price: 899.99,
-  description: 'MacBook Pro 2019 model in excellent condition. 16GB RAM, 512GB SSD, Intel i7 processor. Comes with charger and original box. Perfect for college students who need a reliable laptop for coursework and programming. Battery health is at 89%.',
-  images: ['https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80'],
-  location: 'North Dorm, Room 304',
-  date: '2 days ago',
-  seller: {
-    name: 'Alex Johnson',
-    email: 'alex.johnson@university.edu',
-    phone: '+1 (123) 456-7890'
-  },
-  category: 'Electronics'
+type ItemDetailType = {
+  id: string;
+  title: string;
+  price: number;
+  description: string;
+  image_url: string | null;
+  location: string;
+  created_at: string;
+  category: string;
+  contact_email: string;
+  contact_phone: string | null;
+  user_id: string;
+};
+
+type SellerType = {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
 };
 
 const ItemDetails = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
+  const [itemDetails, setItemDetails] = useState<ItemDetailType | null>(null);
+  const [seller, setSeller] = useState<SellerType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // In a real app, you'd fetch the item data based on the ID
-  // For now, we'll use our mock data
+  useEffect(() => {
+    async function fetchItemDetails() {
+      if (!id) return;
+      
+      setIsLoading(true);
+      try {
+        // Fetch item details
+        const { data: item, error: itemError } = await supabase
+          .from('items')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (itemError) throw itemError;
+        
+        if (!item) {
+          toast({
+            title: "Item Not Found",
+            description: "The requested listing could not be found",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        setItemDetails(item);
+        
+        // Fetch seller details
+        const { data: sellerData, error: sellerError } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .eq('id', item.user_id)
+          .single();
+        
+        if (!sellerError) {
+          setSeller(sellerData);
+        }
+      } catch (error: any) {
+        console.error('Error fetching item details:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load item details",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchItemDetails();
+  }, [id, toast]);
+  
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="max-w-4xl mx-auto py-6">
+          <div className="animate-pulse space-y-8">
+            <div className="h-96 bg-gray-200 rounded-xl"></div>
+            <div className="space-y-2">
+              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+            </div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+  
+  if (!itemDetails) {
+    return (
+      <PageLayout>
+        <div className="max-w-4xl mx-auto py-6 text-center">
+          <h1 className="text-2xl font-bold mb-4">Item Not Found</h1>
+          <p className="mb-6">The listing you're looking for doesn't exist or has been removed.</p>
+          <Link to="/">
+            <Button>Back to Home</Button>
+          </Link>
+        </div>
+      </PageLayout>
+    );
+  }
+  
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return "Today";
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+  
+  const sellerName = seller?.full_name || itemDetails.contact_email.split('@')[0] || 'Seller';
   
   return (
     <PageLayout>
       <div className="max-w-4xl mx-auto py-6">
+        <Link to="/search" className="inline-flex items-center text-marketplace-purple mb-4 hover:underline">
+          <ArrowLeft size={16} className="mr-1" />
+          Back to search
+        </Link>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Item Images */}
-          <div>
-            <div className="aspect-square overflow-hidden rounded-xl border">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="aspect-square overflow-hidden rounded-xl border relative">
               <img 
-                src={itemDetails.images[0]} 
+                src={itemDetails.image_url || 'https://via.placeholder.com/600'} 
                 alt={itemDetails.title} 
                 className="w-full h-full object-cover"
               />
+              <div className="absolute top-4 right-4">
+                <SaveButton itemId={itemDetails.id} size="default" />
+              </div>
             </div>
-          </div>
+          </motion.div>
           
           {/* Item Details */}
-          <div className="space-y-6">
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <div>
-              <h1 className="text-2xl font-bold">{itemDetails.title}</h1>
+              <div className="flex justify-between items-start">
+                <h1 className="text-2xl font-bold">{itemDetails.title}</h1>
+              </div>
               <p className="text-3xl font-semibold text-marketplace-purple mt-2">${itemDetails.price.toFixed(2)}</p>
               <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
                 <span>{itemDetails.location}</span>
                 <span>•</span>
-                <span>Listed {itemDetails.date}</span>
+                <span>Listed {formatDate(itemDetails.created_at)}</span>
+              </div>
+              <div className="mt-2 inline-block bg-gray-100 text-gray-700 rounded-full px-3 py-1 text-xs">
+                {itemDetails.category.charAt(0).toUpperCase() + itemDetails.category.slice(1)}
               </div>
             </div>
             
@@ -65,11 +197,11 @@ const ItemDetails = () => {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-500">Seller</p>
-                  <p className="font-medium">{itemDetails.seller.name}</p>
+                  <p className="font-medium">{sellerName}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <a 
-                    href={`mailto:${itemDetails.seller.email}`} 
+                    href={`mailto:${itemDetails.contact_email}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                   >
@@ -77,19 +209,21 @@ const ItemDetails = () => {
                       Email Seller
                     </Button>
                   </a>
-                  <a 
-                    href={`https://wa.me/${itemDetails.seller.phone.replace(/[^0-9]/g, '')}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                  >
-                    <Button className="w-full bg-green-500 hover:bg-green-600">
-                      WhatsApp
-                    </Button>
-                  </a>
+                  {itemDetails.contact_phone && (
+                    <a 
+                      href={`https://wa.me/${itemDetails.contact_phone.replace(/[^0-9]/g, '')}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      <Button className="w-full bg-green-500 hover:bg-green-600">
+                        WhatsApp
+                      </Button>
+                    </a>
+                  )}
                 </div>
               </div>
             </Card>
-          </div>
+          </motion.div>
         </div>
       </div>
     </PageLayout>

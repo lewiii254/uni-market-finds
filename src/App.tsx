@@ -13,6 +13,7 @@ import AddListing from "./pages/AddListing";
 import ItemDetails from "./pages/ItemDetails";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import CategoryPage from "./pages/CategoryPage";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
       <Route path="/search" element={<Search />} />
+      <Route path="/category/:categoryName" element={<CategoryPage />} />
       <Route 
         path="/add-listing" 
         element={
