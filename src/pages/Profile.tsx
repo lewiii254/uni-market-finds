@@ -16,6 +16,7 @@ type ProfileData = {
   avatar_url: string | null;
   university: string | null;
   phone: string | null;
+  created_at?: string;
 };
 
 type ItemData = {

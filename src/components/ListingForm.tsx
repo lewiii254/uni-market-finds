@@ -87,17 +87,19 @@ const ListingForm = () => {
       }
       
       // Create the item listing
-      const { error } = await supabase.from('items').insert({
-        title,
-        price: parseFloat(price),
-        category,
-        description,
-        location,
-        image_url: imageUrl,
-        contact_email: email || user.email,
-        contact_phone: phone,
-        user_id: user.id
-      });
+      const { error } = await supabase
+        .from('items')
+        .insert({
+          title,
+          price: parseFloat(price),
+          category,
+          description,
+          location,
+          image_url: imageUrl,
+          contact_email: email || user.email,
+          contact_phone: phone,
+          user_id: user.id
+        });
       
       if (error) throw error;
       
