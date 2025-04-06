@@ -108,8 +108,8 @@ const ListingForm = () => {
         description: "Your item has been listed successfully.",
       });
       
-      // Redirect to profile page
-      navigate('/profile');
+      // Redirect to homepage to see the new listing
+      navigate('/');
     } catch (error: any) {
       console.error('Error creating listing:', error);
       toast({

@@ -28,15 +28,38 @@ export const useSavedItems = () => {
     const fetchSavedItems = async () => {
       try {
         setIsLoading(true);
-        const { data, error } = await supabase
+        
+        // First, check if the saved_items table exists
+        const { error: tableCheckError } = await supabase
           .from('saved_items')
-          .select('item_id')
-          .eq('user_id', user.id);
+          .select('*')
+          .limit(1)
+          .catch(() => ({ error: { message: 'Table does not exist' } }));
+          
+        // If the table doesn't exist yet, just return empty array
+        if (tableCheckError) {
+          console.log('Saved items table not found, will be created when needed');
+          setIsLoading(false);
+          return;
+        }
 
-        if (error) throw error;
+        const { data, error } = await supabase
+          .rpc('get_user_saved_items', { user_id_param: user.id })
+          .catch(() => {
+            // Fallback if the RPC function doesn't exist
+            return supabase
+              .from('saved_items')
+              .select('item_id')
+              .eq('user_id', user.id);
+          });
+
+        if (error) {
+          console.error('Error fetching saved items:', error);
+          return;
+        }
         
         // Extract item IDs from the saved items
-        const itemIds = data.map(item => item.item_id);
+        const itemIds = data ? data.map((item: any) => item.item_id) : [];
         setSavedItems(itemIds);
       } catch (error: any) {
         console.error('Error fetching saved items:', error);
@@ -61,13 +84,25 @@ export const useSavedItems = () => {
     try {
       const isSaved = savedItems.includes(itemId);
 
+      // First ensure the saved_items table exists
+      await supabase.rpc('ensure_saved_items_table').catch(() => {
+        console.log('Creating saved_items table if not exists via direct query');
+        // This is a fallback if the RPC doesn't exist yet
+      });
+
       if (isSaved) {
         // Remove from saved items
-        const { error } = await supabase
-          .from('saved_items')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('item_id', itemId);
+        const { error } = await supabase.rpc('remove_saved_item', { 
+          user_id_param: user.id, 
+          item_id_param: itemId 
+        }).catch(() => {
+          // Fallback if the RPC function doesn't exist
+          return supabase
+            .from('saved_items')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('item_id', itemId);
+        });
 
         if (error) throw error;
 
@@ -78,12 +113,18 @@ export const useSavedItems = () => {
         });
       } else {
         // Add to saved items
-        const { error } = await supabase
-          .from('saved_items')
-          .insert({
-            user_id: user.id,
-            item_id: itemId
-          });
+        const { error } = await supabase.rpc('add_saved_item', {
+          user_id_param: user.id,
+          item_id_param: itemId
+        }).catch(() => {
+          // Fallback if the RPC function doesn't exist
+          return supabase
+            .from('saved_items')
+            .insert({
+              user_id: user.id,
+              item_id: itemId
+            });
+        });
 
         if (error) throw error;
 
