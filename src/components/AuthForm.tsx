@@ -5,26 +5,53 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AuthForm = () => {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent, type: 'login' | 'signup') => {
+  const { signIn, signUp, isLoading } = useAuth();
+  const navigate = useNavigate();
+  
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  
+  // Signup form state
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate authentication
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: type === 'login' ? 'Login Successful' : 'Account Created',
-        description: type === 'login' 
-          ? 'Welcome back to College Marketplace!' 
-          : 'Your account has been created successfully.',
-      });
-    }, 1500);
+    try {
+      await signIn(loginEmail, loginPassword);
+      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate passwords match
+    if (signupPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    } else {
+      setPasswordError('');
+    }
+    
+    try {
+      await signUp(signupEmail, signupPassword, firstName, lastName);
+      navigate('/');
+    } catch (error) {
+      console.error('Signup error:', error);
+    }
   };
 
   return (
@@ -36,28 +63,45 @@ const AuthForm = () => {
         </TabsList>
         
         <TabsContent value="login">
-          <form onSubmit={(e) => handleSubmit(e, 'login')}>
+          <form onSubmit={handleLogin}>
             <CardHeader>
               <CardTitle className="text-2xl">Login</CardTitle>
               <CardDescription>Enter your student email to sign in to your account</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Student Email</Label>
-                <Input id="email" type="email" placeholder="your.name@university.edu" required />
+                <Label htmlFor="login-email">Student Email</Label>
+                <Input 
+                  id="login-email" 
+                  type="email" 
+                  placeholder="your.name@university.edu" 
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  required 
+                />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="login-password">Password</Label>
                   <a href="#" className="text-xs text-marketplace-purple hover:underline">
                     Forgot password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input 
+                  id="login-password" 
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required 
+                />
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full bg-marketplace-purple hover:bg-marketplace-darkPurple" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full bg-marketplace-purple hover:bg-marketplace-darkPurple" 
+                disabled={isLoading}
+              >
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </CardFooter>
@@ -65,7 +109,7 @@ const AuthForm = () => {
         </TabsContent>
         
         <TabsContent value="signup">
-          <form onSubmit={(e) => handleSubmit(e, 'signup')}>
+          <form onSubmit={handleSignup}>
             <CardHeader>
               <CardTitle className="text-2xl">Create an account</CardTitle>
               <CardDescription>Enter your student email to create an account</CardDescription>
@@ -74,28 +118,64 @@ const AuthForm = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First name</Label>
-                  <Input id="firstName" required />
+                  <Input 
+                    id="firstName" 
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last name</Label>
-                  <Input id="lastName" required />
+                  <Input 
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required 
+                  />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Student Email</Label>
-                <Input id="email" type="email" placeholder="your.name@university.edu" required />
+                <Label htmlFor="signup-email">Student Email</Label>
+                <Input 
+                  id="signup-email" 
+                  type="email" 
+                  placeholder="your.name@university.edu"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
+                  required 
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
+                <Label htmlFor="signup-password">Password</Label>
+                <Input 
+                  id="signup-password" 
+                  type="password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  required 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input id="confirmPassword" type="password" required />
+                <Input 
+                  id="confirmPassword" 
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required 
+                />
+                {passwordError && (
+                  <p className="text-sm text-red-500">{passwordError}</p>
+                )}
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full bg-marketplace-purple hover:bg-marketplace-darkPurple" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full bg-marketplace-purple hover:bg-marketplace-darkPurple"
+                disabled={isLoading}
+              >
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </CardFooter>

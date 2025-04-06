@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 const categories = [
   "Electronics", 
@@ -18,13 +22,26 @@ const categories = [
 ];
 
 const ListingForm = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // Form fields
+  const [title, setTitle] = useState('');
+  const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState('');
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -33,19 +50,74 @@ const ListingForm = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      setIsLoading(false);
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create a listing.",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      // Upload image if provided
+      let imageUrl = null;
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const filePath = `items/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('marketplace')
+          .upload(filePath, imageFile);
+          
+        if (uploadError) {
+          throw uploadError;
+        }
+        
+        // Get the public URL
+        const { data } = supabase.storage.from('marketplace').getPublicUrl(filePath);
+        imageUrl = data.publicUrl;
+      }
+      
+      // Create the item listing
+      const { error } = await supabase.from('items').insert({
+        title,
+        price: parseFloat(price),
+        category,
+        description,
+        location,
+        image_url: imageUrl,
+        contact_email: email || user.email,
+        contact_phone: phone,
+        user_id: user.id
+      });
+      
+      if (error) throw error;
+      
       toast({
         title: "Listing Created",
         description: "Your item has been listed successfully.",
       });
-      // Reset form or redirect
-    }, 1500);
+      
+      // Redirect to profile page
+      navigate('/profile');
+    } catch (error: any) {
+      console.error('Error creating listing:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create listing",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -61,24 +133,39 @@ const ListingForm = () => {
           <div className="space-y-4">
             <div>
               <Label htmlFor="title">Item Title</Label>
-              <Input id="title" placeholder="e.g. iPhone 13 Pro Max - Excellent Condition" required />
+              <Input 
+                id="title" 
+                placeholder="e.g. iPhone 13 Pro Max - Excellent Condition" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required 
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="price">Price ($)</Label>
-                <Input id="price" type="number" min="0" step="0.01" placeholder="0.00" required />
+                <Input 
+                  id="price" 
+                  type="number" 
+                  min="0" 
+                  step="0.01" 
+                  placeholder="0.00"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  required 
+                />
               </div>
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Select>
+                <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category.toLowerCase()}>
-                        {category}
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat.toLowerCase()}>
+                        {cat}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -92,6 +179,8 @@ const ListingForm = () => {
                 id="description" 
                 placeholder="Describe your item, include details about condition, age, etc." 
                 rows={4}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 required
               />
             </div>
@@ -101,17 +190,35 @@ const ListingForm = () => {
           <div className="space-y-4">
             <div>
               <Label htmlFor="location">Location on Campus</Label>
-              <Input id="location" placeholder="e.g. North Dorm, Engineering Building" required />
+              <Input 
+                id="location" 
+                placeholder="e.g. North Dorm, Engineering Building"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                required 
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="email">Contact Email</Label>
-                <Input id="email" type="email" placeholder="your.email@university.edu" />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="your.email@university.edu"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor="phone">WhatsApp Number</Label>
-                <Input id="phone" type="tel" placeholder="+1 (123) 456-7890" />
+                <Input 
+                  id="phone" 
+                  type="tel" 
+                  placeholder="+1 (123) 456-7890"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -132,7 +239,10 @@ const ListingForm = () => {
                     variant="destructive"
                     size="sm"
                     className="absolute top-2 right-2"
-                    onClick={() => setImagePreview(null)}
+                    onClick={() => {
+                      setImagePreview(null);
+                      setImageFile(null);
+                    }}
                   >
                     Remove
                   </Button>
@@ -142,7 +252,6 @@ const ListingForm = () => {
                   <label htmlFor="image-upload" className="cursor-pointer">
                     <div className="space-y-2">
                       <div className="mx-auto h-12 w-12 text-gray-400">
-                        {/* Simple upload icon */}
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                         </svg>
