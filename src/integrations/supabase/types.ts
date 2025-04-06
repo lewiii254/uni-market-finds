@@ -84,12 +84,66 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_saved_item: {
+        Args: {
+          user_id_param: string
+          item_id_param: string
+        }
+        Returns: undefined
+      }
+      ensure_saved_items_table: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      get_user_saved_items: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: {
+          item_id: string
+        }[]
+      }
+      remove_saved_item: {
+        Args: {
+          user_id_param: string
+          item_id_param: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
