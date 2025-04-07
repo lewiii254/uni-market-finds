@@ -6,13 +6,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { Trash2, Eye, Pencil } from 'lucide-react';
+import ItemsTable from '@/components/admin/ItemsTable';
+import UsersTable from '@/components/admin/UsersTable';
+import StatsOverview from '@/components/admin/StatsOverview';
 
 interface Item {
   id: string;
@@ -31,7 +27,6 @@ interface User {
 
 const AdminPage = () => {
   const { user, isAdmin } = useAuth();
-  const { toast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,28 +83,8 @@ const AdminPage = () => {
     fetchUsers();
   }, [userIsAdmin]);
 
-  const handleDeleteItem = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('items')
-        .delete()
-        .eq('id', id);
-        
-      if (error) throw error;
-      
-      setItems(items.filter(item => item.id !== id));
-      toast({
-        title: "Item deleted",
-        description: "The item has been successfully removed"
-      });
-    } catch (error) {
-      console.error('Error deleting item:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the item",
-        variant: "destructive"
-      });
-    }
+  const handleItemDeleted = (id: string) => {
+    setItems(items.filter(item => item.id !== id));
   };
 
   // Redirect non-admin users
@@ -143,56 +118,11 @@ const AdminPage = () => {
                 <CardTitle>All Listings</CardTitle>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
-                  <div className="flex justify-center py-6">
-                    <div className="animate-pulse">Loading listings...</div>
-                  </div>
-                ) : items.length === 0 ? (
-                  <div className="text-center py-6">No listings found</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {items.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>{item.title}</TableCell>
-                            <TableCell>{item.category}</TableCell>
-                            <TableCell>KSH {item.price.toLocaleString()}</TableCell>
-                            <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button size="icon" variant="ghost" asChild>
-                                  <a href={`/item/${item.id}`} target="_blank" rel="noreferrer">
-                                    <Eye className="h-4 w-4" />
-                                  </a>
-                                </Button>
-                                <Button size="icon" variant="ghost">
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  size="icon" 
-                                  variant="ghost" 
-                                  onClick={() => handleDeleteItem(item.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+                <ItemsTable 
+                  items={items} 
+                  isLoading={isLoading}
+                  onItemDeleted={handleItemDeleted} 
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -203,68 +133,13 @@ const AdminPage = () => {
                 <CardTitle>User Management</CardTitle>
               </CardHeader>
               <CardContent>
-                {users.length === 0 ? (
-                  <div className="text-center py-6">No users found</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>User ID</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Joined</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell className="font-mono text-xs">{user.id}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+                <UsersTable users={users} />
               </CardContent>
             </Card>
           </TabsContent>
           
           <TabsContent value="stats" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{items.length}</div>
-                  <p className="text-xs text-muted-foreground">+0% from last month</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{users.length}</div>
-                  <p className="text-xs text-muted-foreground">+0% from last month</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    KSH {items.reduce((sum, item) => sum + item.price, 0).toLocaleString()}
-                  </div>
-                  <p className="text-xs text-muted-foreground">All active listings</p>
-                </CardContent>
-              </Card>
-            </div>
+            <StatsOverview items={items} usersCount={users.length} />
           </TabsContent>
         </Tabs>
       </div>

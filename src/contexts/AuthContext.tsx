@@ -58,6 +58,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
+      console.log('Attempting login with:', email);
+      
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -72,6 +74,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: 'Welcome back to Kuza-Market!',
       });
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: 'Login Failed',
         description: error.message || 'An error occurred during login',
