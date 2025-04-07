@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
+import { Search, TrendingUp, Tag, Users, ShieldCheck } from 'lucide-react';
 
 interface Item {
   id: string;
@@ -64,40 +65,124 @@ const HomePage = () => {
     fetchItems();
   }, []);
 
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+  
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
   return (
     <PageLayout>
-      <div className="space-y-8">
-        {/* Hero section */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center py-8"
+      <div className="space-y-10">
+        {/* Hero section with enhanced design */}
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+          className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-12 px-6 md:py-20 md:px-12 text-center"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">College Marketplace</h1>
-          <p className="text-lg text-gray-600 mb-6">Buy and sell items within your university community</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/add-listing">
-              <Button className="bg-marketplace-purple hover:bg-marketplace-darkPurple">
-                Sell Something
-              </Button>
-            </Link>
-            <Link to="/search">
-              <Button variant="outline">
-                Browse Items
-              </Button>
-            </Link>
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80')] opacity-20 mix-blend-overlay"></div>
+          
+          <div className="relative z-10 max-w-3xl mx-auto space-y-6">
+            <motion.h1 
+              className="text-3xl md:text-5xl font-bold mb-2"
+              variants={fadeInUp}
+            >
+              Campus Marketplace
+            </motion.h1>
+            
+            <motion.p 
+              className="text-lg md:text-xl text-white/90 mb-8"
+              variants={fadeInUp}
+            >
+              Buy, sell, and discover amazing deals within your university community
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              variants={fadeInUp}
+            >
+              <Link to="/add-listing">
+                <Button size="lg" className="bg-white text-indigo-600 hover:bg-white/90 font-medium">
+                  Sell Something
+                </Button>
+              </Link>
+              <Link to="/search">
+                <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
+                  <Search className="mr-2 h-4 w-4" />
+                  Browse Items
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
+        
+        {/* Features section */}
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+          className="py-8"
+        >
+          <h2 className="text-2xl font-semibold text-center mb-8">Why Use Campus Marketplace?</h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { icon: Users, title: "Community Based", description: "Trade with fellow students you can trust" },
+              { icon: Tag, title: "Great Deals", description: "Find bargains on textbooks, electronics & more" },
+              { icon: TrendingUp, title: "Quick & Easy", description: "List items in minutes and sell fast" },
+              { icon: ShieldCheck, title: "Secure", description: "Safe transactions within your campus" }
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                variants={fadeInUp}
+                className="flex flex-col items-center text-center p-4"
+              >
+                <div className="bg-marketplace-purple/10 p-3 rounded-full mb-3">
+                  <feature.icon className="h-6 w-6 text-marketplace-purple" />
+                </div>
+                <h3 className="font-medium mb-1">{feature.title}</h3>
+                <p className="text-sm text-gray-500">{feature.description}</p>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
         
         {/* Categories section */}
-        <Categories />
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeInUp}
+        >
+          <Categories />
+        </motion.div>
         
         {/* Featured items section */}
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-semibold">Featured Items</h2>
-            <Link to="/search" className="text-sm text-marketplace-purple hover:underline">View all</Link>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeInUp}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">Featured Items</h2>
+            <Link to="/search" className="text-sm text-marketplace-purple hover:underline flex items-center">
+              View all 
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-1">
+                <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
           </div>
           
           {isLoading ? (
@@ -107,13 +192,14 @@ const HomePage = () => {
               ))}
             </div>
           ) : featuredItems.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <motion.div 
+              variants={staggerContainer}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
               {featuredItems.map((item) => (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
+                  variants={fadeInUp}
                 >
                   <ItemCard 
                     id={item.id}
@@ -125,7 +211,7 @@ const HomePage = () => {
                   />
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
             <div className="text-center py-10 bg-gray-50 rounded-lg">
               <p className="text-gray-500">No featured items available</p>
@@ -134,13 +220,23 @@ const HomePage = () => {
               </Link>
             </div>
           )}
-        </div>
+        </motion.div>
         
         {/* Recent listings section */}
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-semibold">Recent Listings</h2>
-            <Link to="/search" className="text-sm text-marketplace-purple hover:underline">View all</Link>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeInUp}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">Recent Listings</h2>
+            <Link to="/search" className="text-sm text-marketplace-purple hover:underline flex items-center">
+              View all
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-1">
+                <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
           </div>
           
           {isLoading ? (
@@ -150,13 +246,14 @@ const HomePage = () => {
               ))}
             </div>
           ) : recentItems.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <motion.div 
+              variants={staggerContainer}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
               {recentItems.map((item) => (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
+                  variants={fadeInUp}
                 >
                   <ItemCard 
                     id={item.id}
@@ -168,7 +265,7 @@ const HomePage = () => {
                   />
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
             <div className="text-center py-10 bg-gray-50 rounded-lg">
               <p className="text-gray-500">No recent items available</p>
@@ -177,7 +274,24 @@ const HomePage = () => {
               </Link>
             </div>
           )}
-        </div>
+        </motion.div>
+        
+        {/* Call to action */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeInUp}
+          className="bg-gray-50 rounded-2xl p-8 text-center space-y-4"
+        >
+          <h2 className="text-2xl font-semibold">Ready to sell your items?</h2>
+          <p className="text-gray-600">Get started in minutes and reach thousands of students on campus</p>
+          <Link to="/add-listing">
+            <Button size="lg" className="bg-marketplace-purple hover:bg-marketplace-darkPurple mt-2">
+              List Your Item
+            </Button>
+          </Link>
+        </motion.div>
       </div>
     </PageLayout>
   );

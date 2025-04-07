@@ -14,6 +14,7 @@ import ItemDetails from "./pages/ItemDetails";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin" 
+        element={
+          <ProtectedRoute>
+            <Admin />
           </ProtectedRoute>
         } 
       />
