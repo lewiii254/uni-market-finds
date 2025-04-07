@@ -1,9 +1,5 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+
+/* Only keep essential styles */
 
 .logo {
   height: 6em;
@@ -11,32 +7,30 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Add custom transitions */
+.page-transition-enter {
+  opacity: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.page-transition-enter-active {
+  opacity: 1;
+  transition: opacity 300ms;
 }
 
-.card {
-  padding: 2em;
+.page-transition-exit {
+  opacity: 1;
 }
 
-.read-the-docs {
-  color: #888;
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
 }

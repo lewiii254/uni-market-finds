@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { Search, TrendingUp, Tag, Users, ShieldCheck } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Item {
   id: string;
@@ -40,7 +41,7 @@ const HomePage = () => {
           .from('items')
           .select('id, title, price, image_url, location, created_at')
           .order('price', { ascending: false })
-          .limit(4);
+          .limit(8);
         
         if (featuredError) throw featuredError;
         
@@ -49,7 +50,7 @@ const HomePage = () => {
           .from('items')
           .select('id, title, price, image_url, location, created_at')
           .order('created_at', { ascending: false })
-          .limit(4);
+          .limit(8);
           
         if (recentError) throw recentError;
         
@@ -97,7 +98,7 @@ const HomePage = () => {
               className="text-3xl md:text-5xl font-bold mb-2"
               variants={fadeInUp}
             >
-              Campus Marketplace
+              Kuza-Market
             </motion.h1>
             
             <motion.p 
@@ -134,7 +135,7 @@ const HomePage = () => {
           variants={staggerContainer}
           className="py-8"
         >
-          <h2 className="text-2xl font-semibold text-center mb-8">Why Use Campus Marketplace?</h2>
+          <h2 className="text-2xl font-semibold text-center mb-8">Why Use Kuza-Market?</h2>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
@@ -168,112 +169,106 @@ const HomePage = () => {
           <Categories />
         </motion.div>
         
-        {/* Featured items section */}
+        {/* Items section with tabs */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={fadeInUp}
+          className="bg-white rounded-lg shadow-sm border border-gray-100 p-6"
         >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">Featured Items</h2>
-            <Link to="/search" className="text-sm text-marketplace-purple hover:underline flex items-center">
-              View all 
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-1">
-                <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
-          </div>
+          <h2 className="text-2xl font-semibold mb-6">Explore Items</h2>
           
-          {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-gray-100 animate-pulse rounded-lg h-52"></div>
-              ))}
-            </div>
-          ) : featuredItems.length > 0 ? (
-            <motion.div 
-              variants={staggerContainer}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4"
-            >
-              {featuredItems.map((item) => (
-                <motion.div
-                  key={item.id}
-                  variants={fadeInUp}
-                >
-                  <ItemCard 
-                    id={item.id}
-                    title={item.title}
-                    price={item.price}
-                    image={item.image_url || ''}
-                    location={item.location}
-                    date={formatRelativeTime(item.created_at)}
-                  />
+          <Tabs defaultValue="featured" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="featured">Featured Items</TabsTrigger>
+              <TabsTrigger value="recent">Recent Listings</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="featured">
+              {isLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-gray-100 animate-pulse rounded-lg h-52"></div>
+                  ))}
+                </div>
+              ) : featuredItems.length > 0 ? (
+                <motion.div variants={staggerContainer} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {featuredItems.map((item) => (
+                    <motion.div key={item.id} variants={fadeInUp}>
+                      <ItemCard 
+                        id={item.id}
+                        title={item.title}
+                        price={item.price}
+                        image={item.image_url || ''}
+                        location={item.location}
+                        date={formatRelativeTime(item.created_at)}
+                      />
+                    </motion.div>
+                  ))}
                 </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <div className="text-center py-10 bg-gray-50 rounded-lg">
-              <p className="text-gray-500">No featured items available</p>
-              <Link to="/add-listing" className="mt-2 inline-block text-marketplace-purple hover:underline">
-                Be the first to add an item!
-              </Link>
-            </div>
-          )}
-        </motion.div>
-        
-        {/* Recent listings section */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeInUp}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">Recent Listings</h2>
-            <Link to="/search" className="text-sm text-marketplace-purple hover:underline flex items-center">
-              View all
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-1">
-                <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
-          </div>
-          
-          {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-gray-100 animate-pulse rounded-lg h-52"></div>
-              ))}
-            </div>
-          ) : recentItems.length > 0 ? (
-            <motion.div 
-              variants={staggerContainer}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4"
-            >
-              {recentItems.map((item) => (
-                <motion.div
-                  key={item.id}
-                  variants={fadeInUp}
-                >
-                  <ItemCard 
-                    id={item.id}
-                    title={item.title}
-                    price={item.price}
-                    image={item.image_url || ''}
-                    location={item.location}
-                    date={formatRelativeTime(item.created_at)}
-                  />
+              ) : (
+                <div className="text-center py-10 bg-gray-50 rounded-lg">
+                  <p className="text-gray-500">No featured items available</p>
+                  <Link to="/add-listing" className="mt-2 inline-block text-marketplace-purple hover:underline">
+                    Be the first to add an item!
+                  </Link>
+                </div>
+              )}
+              {featuredItems.length > 0 && (
+                <div className="mt-6 text-center">
+                  <Link to="/search" className="inline-flex items-center text-marketplace-purple hover:underline">
+                    View all featured items
+                    <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </Link>
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="recent">
+              {isLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="bg-gray-100 animate-pulse rounded-lg h-52"></div>
+                  ))}
+                </div>
+              ) : recentItems.length > 0 ? (
+                <motion.div variants={staggerContainer} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {recentItems.map((item) => (
+                    <motion.div key={item.id} variants={fadeInUp}>
+                      <ItemCard 
+                        id={item.id}
+                        title={item.title}
+                        price={item.price}
+                        image={item.image_url || ''}
+                        location={item.location}
+                        date={formatRelativeTime(item.created_at)}
+                      />
+                    </motion.div>
+                  ))}
                 </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <div className="text-center py-10 bg-gray-50 rounded-lg">
-              <p className="text-gray-500">No recent items available</p>
-              <Link to="/add-listing" className="mt-2 inline-block text-marketplace-purple hover:underline">
-                Be the first to add an item!
-              </Link>
-            </div>
-          )}
+              ) : (
+                <div className="text-center py-10 bg-gray-50 rounded-lg">
+                  <p className="text-gray-500">No recent items available</p>
+                  <Link to="/add-listing" className="mt-2 inline-block text-marketplace-purple hover:underline">
+                    Be the first to add an item!
+                  </Link>
+                </div>
+              )}
+              {recentItems.length > 0 && (
+                <div className="mt-6 text-center">
+                  <Link to="/search" className="inline-flex items-center text-marketplace-purple hover:underline">
+                    View all recent listings
+                    <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </Link>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </motion.div>
         
         {/* Call to action */}
@@ -282,12 +277,12 @@ const HomePage = () => {
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={fadeInUp}
-          className="bg-gray-50 rounded-2xl p-8 text-center space-y-4"
+          className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-8 text-center space-y-4 text-white"
         >
           <h2 className="text-2xl font-semibold">Ready to sell your items?</h2>
-          <p className="text-gray-600">Get started in minutes and reach thousands of students on campus</p>
+          <p className="text-white/90">Get started in minutes and reach thousands of students on campus</p>
           <Link to="/add-listing">
-            <Button size="lg" className="bg-marketplace-purple hover:bg-marketplace-darkPurple mt-2">
+            <Button size="lg" className="bg-white text-marketplace-purple hover:bg-white/90 mt-2">
               List Your Item
             </Button>
           </Link>
