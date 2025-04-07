@@ -8,6 +8,7 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isAdmin: (user: User | null) => boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -15,11 +16,22 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Admin credentials - specified emails that have admin access
+const ADMIN_EMAILS = ['admin@kuzamarket.com', 'demo@admin.com'];
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  // Check if user is an admin
+  const isAdmin = (user: User | null): boolean => {
+    if (!user || !user.email) return false;
+    
+    // Check if user email is in the admin emails list
+    return ADMIN_EMAILS.includes(user.email);
+  };
 
   useEffect(() => {
     // Set up auth state listener first
@@ -57,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       toast({
         title: 'Login Successful',
-        description: 'Welcome back to College Marketplace!',
+        description: 'Welcome back to Kuza-Market!',
       });
     } catch (error: any) {
       toast({
@@ -125,7 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, isLoading, isAdmin, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

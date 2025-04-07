@@ -30,31 +30,18 @@ interface User {
 }
 
 const AdminPage = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if current user is admin
-  // For this demo, we'll just check if the email contains 'admin'
-  // In a real app, you'd check against a proper role system
-  useEffect(() => {
-    const checkAdminStatus = () => {
-      if (!user) return;
-      
-      // Simplified admin check - in real app use proper roles
-      const isUserAdmin = user.email?.includes('admin');
-      setIsAdmin(!!isUserAdmin);
-    };
-    
-    checkAdminStatus();
-  }, [user]);
+  // Check if current user is admin using the isAdmin function
+  const userIsAdmin = isAdmin(user);
 
   // Fetch items for admin dashboard
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!userIsAdmin) return;
     
     const fetchItems = async () => {
       setIsLoading(true);
@@ -72,11 +59,11 @@ const AdminPage = () => {
     };
     
     fetchItems();
-  }, [isAdmin]);
+  }, [userIsAdmin]);
 
   // Fetch users for admin dashboard
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!userIsAdmin) return;
     
     const fetchUsers = async () => {
       // In a real app, you'd use an admin API to fetch users
@@ -99,7 +86,7 @@ const AdminPage = () => {
     };
     
     fetchUsers();
-  }, [isAdmin]);
+  }, [userIsAdmin]);
 
   const handleDeleteItem = async (id: string) => {
     try {
@@ -126,7 +113,7 @@ const AdminPage = () => {
   };
 
   // Redirect non-admin users
-  if (user && !isAdmin && !isLoading) {
+  if (user && !userIsAdmin && !isLoading) {
     return <Navigate to="/" />;
   }
   

@@ -23,6 +23,11 @@ const AuthForm = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
+
+  const handleUseAdminCredentials = () => {
+    setLoginEmail('admin@kuzamarket.com');
+    setLoginPassword('password123');
+  };
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,15 +71,15 @@ const AuthForm = () => {
           <form onSubmit={handleLogin}>
             <CardHeader>
               <CardTitle className="text-2xl">Login</CardTitle>
-              <CardDescription>Enter your student email to sign in to your account</CardDescription>
+              <CardDescription>Enter your email to sign in to your account</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="login-email">Student Email</Label>
+                <Label htmlFor="login-email">Email</Label>
                 <Input 
                   id="login-email" 
                   type="email" 
-                  placeholder="your.name@university.edu" 
+                  placeholder="your.name@example.com" 
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   required 
@@ -95,6 +100,15 @@ const AuthForm = () => {
                   required 
                 />
               </div>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                className="w-full mt-2"
+                onClick={handleUseAdminCredentials}
+              >
+                Use Admin Credentials
+              </Button>
             </CardContent>
             <CardFooter>
               <Button 
@@ -112,7 +126,7 @@ const AuthForm = () => {
           <form onSubmit={handleSignup}>
             <CardHeader>
               <CardTitle className="text-2xl">Create an account</CardTitle>
-              <CardDescription>Enter your student email to create an account</CardDescription>
+              <CardDescription>Enter your details to create an account</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -136,11 +150,11 @@ const AuthForm = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="signup-email">Student Email</Label>
+                <Label htmlFor="signup-email">Email</Label>
                 <Input 
                   id="signup-email" 
                   type="email" 
-                  placeholder="your.name@university.edu"
+                  placeholder="your.name@example.com"
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
                   required 
