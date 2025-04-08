@@ -23,11 +23,6 @@ const AuthForm = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-
-  const handleUseAdminCredentials = () => {
-    setLoginEmail('admin@kuzamarket.com');
-    setLoginPassword('password123');
-  };
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,15 +95,6 @@ const AuthForm = () => {
                   required 
                 />
               </div>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                className="w-full mt-2"
-                onClick={handleUseAdminCredentials}
-              >
-                Use Admin Credentials
-              </Button>
             </CardContent>
             <CardFooter>
               <Button 

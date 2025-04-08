@@ -9,9 +9,6 @@ const Login = () => {
         <div className="text-center">
           <h1 className="text-3xl font-bold text-marketplace-purple">Kuza-Market</h1>
           <p className="mt-2 text-gray-600">Sign in or create an account to continue</p>
-          <p className="mt-1 text-sm text-gray-500">
-            For admin access, use: admin@kuzamarket.com / password123
-          </p>
         </div>
         <AuthForm />
       </div>
