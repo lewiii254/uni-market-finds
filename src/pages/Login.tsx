@@ -1,6 +1,8 @@
 
 import React from 'react';
 import AuthForm from '@/components/AuthForm';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const Login = () => {
   return (
@@ -10,6 +12,15 @@ const Login = () => {
           <h1 className="text-3xl font-bold text-marketplace-purple">Kuza-Market</h1>
           <p className="mt-2 text-gray-600">Sign in or create an account to continue</p>
         </div>
+        
+        <Alert variant="destructive" className="bg-yellow-50 text-yellow-800 border-yellow-200">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            New users must sign up before logging in. If you've already signed up, please ensure 
+            you're using the correct email and password.
+          </AlertDescription>
+        </Alert>
+        
         <AuthForm />
       </div>
     </div>

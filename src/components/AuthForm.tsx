@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
 
 const AuthForm = () => {
   const { signIn, signUp, isLoading } = useAuth();
@@ -15,6 +16,7 @@ const AuthForm = () => {
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   
   // Signup form state
   const [firstName, setFirstName] = useState('');
@@ -23,20 +25,24 @@ const AuthForm = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [signupError, setSignupError] = useState('');
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
     
     try {
       await signIn(loginEmail, loginPassword);
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      setLoginError(error.message || 'Failed to sign in. Please check your credentials.');
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSignupError('');
     
     // Validate passwords match
     if (signupPassword !== confirmPassword) {
@@ -49,8 +55,9 @@ const AuthForm = () => {
     try {
       await signUp(signupEmail, signupPassword, firstName, lastName);
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Signup error:', error);
+      setSignupError(error.message || 'Failed to create account.');
     }
   };
 
@@ -69,6 +76,12 @@ const AuthForm = () => {
               <CardDescription>Enter your email to sign in to your account</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {loginError && (
+                <div className="p-3 rounded-md bg-red-50 text-red-700 flex items-start space-x-2">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <span>{loginError}</span>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="login-email">Email</Label>
                 <Input 
@@ -115,6 +128,12 @@ const AuthForm = () => {
               <CardDescription>Enter your details to create an account</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {signupError && (
+                <div className="p-3 rounded-md bg-red-50 text-red-700 flex items-start space-x-2">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <span>{signupError}</span>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First name</Label>
