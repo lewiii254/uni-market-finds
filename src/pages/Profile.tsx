@@ -1,24 +1,23 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ItemCard from '@/components/ItemCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSavedItems } from '@/hooks/useSavedItems';
 import { motion } from 'framer-motion';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Mail, Phone, Calendar, MapPin, Package, BookmarkIcon, User } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Package, BookmarkIcon } from 'lucide-react';
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+// Import the new components
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import ProfileForm from '@/components/profile/ProfileForm';
+import ListingsTab from '@/components/profile/ListingsTab';
+import SavedItemsTab from '@/components/profile/SavedItemsTab';
 
 type ProfileData = {
   id: string;
@@ -165,13 +164,13 @@ const Profile = () => {
       setIsEditing(false);
       
       toast({
-        title: 'Profile Updated',
-        description: 'Your profile information has been updated.',
+        title: '✅ Profile Updated',
+        description: 'Your profile information has been updated successfully.',
       });
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
-        title: 'Update Failed',
+        title: '❌ Update Failed',
         description: error.message || 'Failed to update profile',
         variant: 'destructive',
       });
@@ -199,140 +198,29 @@ const Profile = () => {
   
   const displayName = profile?.full_name || user.email?.split('@')[0] || 'User';
   const joinedDate = profile?.created_at ? formatDate(profile.created_at) : 'Recently';
-  const initialLetter = displayName.charAt(0).toUpperCase();
   
   return (
     <PageLayout>
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Profile Header Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-gradient-to-r from-marketplace-purple/20 to-marketplace-purple/5 rounded-xl p-6"
-        >
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
-              {profile?.avatar_url ? (
-                <AvatarImage src={profile.avatar_url} alt={displayName} />
-              ) : (
-                <AvatarFallback className="bg-marketplace-purple text-white text-xl">
-                  {initialLetter}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold mb-2">{displayName}</h1>
-              <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Mail className="h-4 w-4 text-marketplace-purple" />
-                  <span>{user.email}</span>
-                </div>
-                {profile?.phone && (
-                  <div className="flex items-center gap-1">
-                    <Phone className="h-4 w-4 text-marketplace-purple" />
-                    <span>{profile.phone}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-marketplace-purple" />
-                  <span>Joined {joinedDate}</span>
-                </div>
-                {profile?.university && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4 text-marketplace-purple" />
-                    <span>{profile.university}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              {isEditing ? (
-                <Button variant="outline" onClick={() => setIsEditing(false)}>
-                  Cancel
-                </Button>
-              ) : (
-                <Button variant="outline" onClick={() => setIsEditing(true)}>
-                  Edit Profile
-                </Button>
-              )}
-              
-              <Button variant="outline" onClick={signOut} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                Log Out
-              </Button>
-            </div>
-          </div>
-        </motion.div>
+        {/* Profile Header */}
+        <ProfileHeader 
+          displayName={displayName}
+          email={user.email}
+          phone={profile?.phone}
+          joinedDate={joinedDate}
+          university={profile?.university}
+          avatarUrl={profile?.avatar_url}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          onSignOut={signOut}
+        />
         
         {/* Edit Profile Form */}
         {isEditing && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Edit Profile Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleUpdateProfile)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="full_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter your full name" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter your phone number (optional)" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="university"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>University/Location</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter your university or location (optional)" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex justify-end">
-                      <Button type="submit" className="w-full sm:w-auto">
-                        Save Changes
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <ProfileForm 
+            form={form} 
+            onSubmit={handleUpdateProfile} 
+          />
         )}
         
         {/* Listings Tabs */}
@@ -340,7 +228,7 @@ const Profile = () => {
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="myListings" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
-              My Listings
+              My Listings 📦
               {myListings.length > 0 && (
                 <span className="bg-marketplace-purple text-white text-xs px-2 py-0.5 rounded-full">
                   {myListings.length}
@@ -349,7 +237,7 @@ const Profile = () => {
             </TabsTrigger>
             <TabsTrigger value="saved" className="flex items-center gap-2">
               <BookmarkIcon className="h-4 w-4" />
-              Saved Items
+              Saved Items 🔖
               {savedListings.length > 0 && (
                 <span className="bg-marketplace-purple text-white text-xs px-2 py-0.5 rounded-full">
                   {savedListings.length}
@@ -364,81 +252,11 @@ const Profile = () => {
             transition={{ duration: 0.5 }}
           >
             <TabsContent value="myListings" className="pt-0">
-              {myListings.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {myListings.map(item => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="hover:-translate-y-1 transition-transform duration-200"
-                    >
-                      <ItemCard 
-                        key={item.id} 
-                        id={item.id}
-                        title={item.title} 
-                        price={item.price} 
-                        image={item.image_url || 'https://via.placeholder.com/300'} 
-                        location={item.location}
-                        date={new Date(item.created_at).toLocaleDateString()} 
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <Card className="border-dashed bg-gray-50">
-                  <CardContent className="text-center py-12">
-                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium mb-2">No Items Listed Yet</h3>
-                    <p className="text-gray-500 mb-6">Start selling by adding your first item to the marketplace.</p>
-                    <Link to="/add-listing">
-                      <Button size="lg">
-                        Add New Listing
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              )}
+              <ListingsTab listings={myListings} />
             </TabsContent>
             
             <TabsContent value="saved" className="pt-0">
-              {savedListings.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {savedListings.map(item => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="hover:-translate-y-1 transition-transform duration-200"
-                    >
-                      <ItemCard 
-                        key={item.id} 
-                        id={item.id}
-                        title={item.title} 
-                        price={item.price} 
-                        image={item.image_url || 'https://via.placeholder.com/300'} 
-                        location={item.location}
-                        date={new Date(item.created_at).toLocaleDateString()} 
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <Card className="border-dashed bg-gray-50">
-                  <CardContent className="text-center py-12">
-                    <BookmarkIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium mb-2">No Saved Items</h3>
-                    <p className="text-gray-500 mb-6">Items you save will appear here for easy access.</p>
-                    <Link to="/">
-                      <Button size="lg">
-                        Browse Listings
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              )}
+              <SavedItemsTab listings={savedListings} />
             </TabsContent>
           </motion.div>
         </Tabs>
