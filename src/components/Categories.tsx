@@ -2,10 +2,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { BookIcon, LaptopIcon, ShirtIcon, HomeIcon, BriefcaseIcon, CoffeeIcon } from 'lucide-react';
+import { BookIcon, LaptopIcon, ShirtIcon, HomeIcon, BriefcaseIcon, CoffeeIcon, ShoppingBagIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const categories = [
+  { name: "All Items", icon: ShoppingBagIcon, path: "/search" },
   { name: "Electronics", icon: LaptopIcon, path: "/category/electronics" },
   { name: "Textbooks", icon: BookIcon, path: "/category/textbooks" },
   { name: "Furniture", icon: HomeIcon, path: "/category/furniture" },

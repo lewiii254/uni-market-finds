@@ -126,7 +126,7 @@ const ItemsSection = ({ featuredItems, recentItems, isLoading, formatRelativeTim
           {featuredItems.length > 0 && (
             <div className="mt-6 text-center">
               <Link to="/search" className="inline-flex items-center bg-marketplace-purple/10 text-marketplace-purple px-4 py-2 rounded-full hover:bg-marketplace-purple/20 transition-colors">
-                View all featured items ✨
+                Browse all items ✨
                 <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
                 </svg>
@@ -140,7 +140,7 @@ const ItemsSection = ({ featuredItems, recentItems, isLoading, formatRelativeTim
           {recentItems.length > 0 && (
             <div className="mt-6 text-center">
               <Link to="/search" className="inline-flex items-center bg-marketplace-purple/10 text-marketplace-purple px-4 py-2 rounded-full hover:bg-marketplace-purple/20 transition-colors">
-                View all recent listings 🆕
+                Browse all items 🆕
                 <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
                 </svg>
