@@ -40,7 +40,7 @@ const Footer = () => {
             <h3 className="font-semibold mb-3">Contact</h3>
             <ul className="space-y-2 text-sm">
               <li className="text-gray-500">Email: support@campusmarketplace.com</li>
-              <li className="text-gray-500">Phone: +254 700 123 456</li>
+              <li className="text-gray-500">Phone: +254 790767347</li>
               <li className="text-gray-500">Location: Student Center, Main Campus</li>
             </ul>
           </div>
