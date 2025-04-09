@@ -5,8 +5,9 @@ import Categories from '@/components/Categories';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
 
-// Import the new components
+// Import the components
 import HeroSection from '@/components/home/HeroSection';
 import FeaturesSection from '@/components/home/FeaturesSection';
 import ItemsSection from '@/components/home/ItemsSection';
@@ -32,7 +33,7 @@ const HomePage = () => {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true });
   };
 
-  // Fetch items from Supabase
+  // Subscribe to real-time updates for new items
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -60,12 +61,55 @@ const HomePage = () => {
         setRecentItems(recentData || []);
       } catch (error) {
         console.error('Error fetching items:', error);
+        toast({
+          title: "Error loading items",
+          description: "There was a problem loading the marketplace items.",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchItems();
+
+    // Subscribe to real-time inserts to update the recent listings immediately
+    const channel = supabase
+      .channel('public:items')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'items' 
+        }, 
+        (payload) => {
+          console.log('New item added:', payload);
+          // Add the new item to the recent items list
+          if (payload.new) {
+            const newItem = payload.new as Item;
+            setRecentItems(prevItems => [newItem, ...prevItems.slice(0, 11)]);
+            
+            // If the new item is expensive enough, it might belong in featured items too
+            if (newItem.price && featuredItems.length > 0 && 
+                newItem.price >= featuredItems[featuredItems.length - 1].price) {
+              // Re-fetch featured items to ensure proper sorting
+              supabase
+                .from('items')
+                .select('id, title, price, image_url, location, created_at')
+                .order('price', { ascending: false })
+                .limit(12)
+                .then(({ data }) => {
+                  if (data) setFeaturedItems(data);
+                });
+            }
+          }
+        })
+      .subscribe();
+
+    // Cleanup function
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fadeInUp = {

@@ -31,6 +31,8 @@ const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, image, location, 
             src={image || 'https://via.placeholder.com/300x200?text=No+Image'}
             alt={title}
             className={`absolute inset-0 object-cover w-full h-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity`}
+            loading="lazy" // Add lazy loading attribute
+            decoding="async" // Hint to browser to decode asynchronously
             onLoad={() => setIsLoading(false)}
             onError={(e) => {
               setImgError(true);

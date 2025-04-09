@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, TrendingUp } from 'lucide-react';
 import ItemCard from '@/components/ItemCard';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Item {
   id: string;
@@ -33,20 +34,31 @@ const ItemsSection = ({ featuredItems, recentItems, isLoading, formatRelativeTim
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        staggerChildren: 0.05 // Faster stagger animation
       }
     }
   };
 
+  // Loading skeleton component for better UX
+  const LoadingSkeleton = () => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {[...Array(8)].map((_, i) => (
+        <div key={i} className="flex flex-col gap-2">
+          <Skeleton className="w-full h-48 rounded-lg" />
+          <Skeleton className="w-3/4 h-5 rounded" />
+          <Skeleton className="w-1/2 h-5 rounded" />
+          <div className="flex justify-between mt-1">
+            <Skeleton className="w-1/3 h-4 rounded" />
+            <Skeleton className="w-1/3 h-4 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   const renderItemsGrid = (items: Item[], label: string) => {
     if (isLoading) {
-      return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-gray-100 animate-pulse rounded-lg h-52"></div>
-          ))}
-        </div>
-      );
+      return <LoadingSkeleton />;
     }
     
     if (items.length === 0) {
@@ -61,7 +73,12 @@ const ItemsSection = ({ featuredItems, recentItems, isLoading, formatRelativeTim
     }
 
     return (
-      <motion.div variants={staggerContainer} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <motion.div 
+        variants={staggerContainer} 
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+      >
         {items.map((item) => (
           <motion.div 
             key={item.id} 
@@ -86,7 +103,7 @@ const ItemsSection = ({ featuredItems, recentItems, isLoading, formatRelativeTim
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, margin: "-50px" }} // Improved margin for earlier loading
       variants={fadeInUp}
       className="bg-white rounded-lg shadow-sm border border-gray-100 p-6"
     >
