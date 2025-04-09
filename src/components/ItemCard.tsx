@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import SaveButton from '@/components/SaveButton';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ItemCardProps {
   id: string;
@@ -14,15 +15,26 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({ id, title, price, image, location, date }) => {
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [imgError, setImgError] = React.useState(false);
+
   return (
     <Link to={`/item/${id}`}>
       <Card className="overflow-hidden transition-shadow hover:shadow-md group h-full">
         <div className="relative w-full pt-[75%]">
+          {isLoading && !imgError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <Skeleton className="h-full w-full" />
+            </div>
+          )}
           <img 
             src={image || 'https://via.placeholder.com/300x200?text=No+Image'}
             alt={title}
-            className="absolute inset-0 object-cover w-full h-full"
+            className={`absolute inset-0 object-cover w-full h-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity`}
+            onLoad={() => setIsLoading(false)}
             onError={(e) => {
+              setImgError(true);
+              setIsLoading(false);
               (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=Image+Error';
             }}
           />
