@@ -66,6 +66,7 @@ const CategoryPage = () => {
             query = query.order('created_at', { ascending: false });
         }
         
+        // Important: Don't limit the number of items returned
         const { data, error } = await query;
         
         if (error) throw error;
@@ -126,7 +127,7 @@ const CategoryPage = () => {
             ))}
           </div>
         ) : items.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {items.map(item => (
               <ItemCard 
                 key={item.id} 

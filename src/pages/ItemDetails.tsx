@@ -176,7 +176,7 @@ const ItemDetails = () => {
               <div className="flex justify-between items-start">
                 <h1 className="text-2xl font-bold">{itemDetails.title}</h1>
               </div>
-              <p className="text-3xl font-semibold text-marketplace-purple mt-2">${itemDetails.price.toFixed(2)}</p>
+              <p className="text-3xl font-semibold text-marketplace-purple mt-2">KSH {itemDetails.price.toLocaleString()}</p>
               <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
                 <span>{itemDetails.location}</span>
                 <span>•</span>

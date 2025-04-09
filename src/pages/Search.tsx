@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import ItemCard from '@/components/ItemCard';
-import { SearchIcon, FilterIcon, ArrowUpDown } from 'lucide-react';
+import { SearchIcon, FilterIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -94,6 +94,7 @@ const Search = () => {
             query = query.order('created_at', { ascending: false });
         }
         
+        // Important: Don't limit the query - get all items matching criteria
         const { data, error } = await query;
         
         if (error) throw error;
@@ -258,7 +259,7 @@ const Search = () => {
               ))}
             </div>
           ) : items.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {items.map(item => (
                 <ItemCard 
                   key={item.id} 
