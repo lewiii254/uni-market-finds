@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Navigate } from 'react-router-dom';
 import PageLayout from '@/components/layout/PageLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// Import the new components
+// Import the components
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileForm from '@/components/profile/ProfileForm';
 import ListingsTab from '@/components/profile/ListingsTab';
@@ -69,53 +69,54 @@ const Profile = () => {
     return <Navigate to="/login" />;
   }
   
+  // Load user profile and listings
+  const loadUserData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch user profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError) throw profileError;
+      setProfile(profileData);
+      
+      // Set form values
+      form.reset({
+        full_name: profileData?.full_name || "",
+        phone: profileData?.phone || "",
+        university: profileData?.university || "",
+      });
+      
+      // Fetch user's listings
+      const { data: listingsData, error: listingsError } = await supabase
+        .from('items')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (listingsError) throw listingsError;
+      setMyListings(listingsData || []);
+    } catch (error: any) {
+      console.error('Error loading profile data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load profile data',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, toast, form]);
+  
   useEffect(() => {
-    async function loadProfile() {
-      try {
-        setIsLoading(true);
-        
-        // Fetch user profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        if (profileError) throw profileError;
-        setProfile(profileData);
-        
-        // Set form values
-        form.reset({
-          full_name: profileData?.full_name || "",
-          phone: profileData?.phone || "",
-          university: profileData?.university || "",
-        });
-        
-        // Fetch user's listings
-        const { data: listingsData, error: listingsError } = await supabase
-          .from('items')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        if (listingsError) throw listingsError;
-        setMyListings(listingsData || []);
-      } catch (error: any) {
-        console.error('Error loading profile data:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load profile data',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    
     if (user) {
-      loadProfile();
+      loadUserData();
     }
-  }, [user, toast]);
+  }, [user, loadUserData]);
 
   // Fetch saved items when savedItems ids change
   useEffect(() => {
@@ -252,7 +253,10 @@ const Profile = () => {
             transition={{ duration: 0.5 }}
           >
             <TabsContent value="myListings" className="pt-0">
-              <ListingsTab listings={myListings} />
+              <ListingsTab 
+                listings={myListings} 
+                refreshListings={loadUserData}
+              />
             </TabsContent>
             
             <TabsContent value="saved" className="pt-0">

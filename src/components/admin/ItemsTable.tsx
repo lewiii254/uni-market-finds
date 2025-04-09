@@ -1,13 +1,16 @@
-
 import React from 'react';
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
-} from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Button } from '@/components/ui/button';
-import { Trash2, Eye, Pencil } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Item {
   id: string;
@@ -16,6 +19,8 @@ interface Item {
   category: string;
   created_at: string;
   user_id: string;
+  image_url: string | null;
+  location: string;
 }
 
 interface ItemsTableProps {
@@ -33,76 +38,82 @@ const ItemsTable: React.FC<ItemsTableProps> = ({ items, isLoading, onItemDeleted
         .from('items')
         .delete()
         .eq('id', id);
-        
+      
       if (error) throw error;
       
-      onItemDeleted(id);
       toast({
-        title: "Item deleted",
-        description: "The item has been successfully removed"
+        title: "Item Deleted",
+        description: "The listing has been successfully removed",
       });
-    } catch (error) {
+      
+      onItemDeleted(id);
+    } catch (error: any) {
       console.error('Error deleting item:', error);
       toast({
         title: "Error",
-        description: "Failed to delete the item",
-        variant: "destructive"
+        description: error.message || "Failed to delete item",
+        variant: "destructive",
       });
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-6">
-        <div className="animate-pulse">Loading listings...</div>
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return <div className="text-center py-6">No listings found</div>;
-  }
-
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
       <Table>
+        <TableCaption>A list of all listed items in the marketplace.</TableCaption>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[100px]">Image</TableHead>
             <TableHead>Title</TableHead>
-            <TableHead>Category</TableHead>
             <TableHead>Price</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Created At</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.title}</TableCell>
-              <TableCell>{item.category}</TableCell>
-              <TableCell>KSH {item.price.toLocaleString()}</TableCell>
-              <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button size="icon" variant="ghost" asChild>
-                    <a href={`/item/${item.id}`} target="_blank" rel="noreferrer">
-                      <Eye className="h-4 w-4" />
-                    </a>
-                  </Button>
-                  <Button size="icon" variant="ghost">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center py-4">Loading...</TableCell>
+            </TableRow>
+          ) : items.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center py-4">No items found.</TableCell>
+            </TableRow>
+          ) : (
+            items.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="font-medium">
+                  {item.image_url ? (
+                    <img 
+                      src={item.image_url} 
+                      alt={item.title} 
+                      className="h-16 w-16 object-cover rounded" 
+                    />
+                  ) : (
+                    <div className="h-16 w-16 bg-gray-100 rounded flex items-center justify-center">
+                      No Image
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="font-medium">{item.title}</TableCell>
+                <TableCell>KSH {item.price.toLocaleString()}</TableCell>
+                <TableCell>{item.category}</TableCell>
+                <TableCell>{item.location}</TableCell>
+                <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                <TableCell className="text-right">
                   <Button 
-                    size="icon" 
-                    variant="ghost" 
+                    variant="destructive" 
+                    size="sm"
                     onClick={() => handleDeleteItem(item.id)}
                   >
-                    <Trash2 className="h-4 w-4 text-red-500" />
+                    Delete
                   </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

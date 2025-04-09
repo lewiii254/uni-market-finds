@@ -1,11 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ItemCard from '@/components/ItemCard';
-import { Package } from 'lucide-react';
+import { Package, Edit, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 interface ItemData {
   id: string;
@@ -18,9 +28,66 @@ interface ItemData {
 
 interface ListingsTabProps {
   listings: ItemData[];
+  refreshListings?: () => void;
 }
 
-const ListingsTab = ({ listings }: ListingsTabProps) => {
+const ListingsTab = ({ listings, refreshListings }: ListingsTabProps) => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleEditItem = (itemId: string) => {
+    // Navigate to edit page (to be implemented later)
+    toast({
+      title: "Edit Feature",
+      description: "Edit functionality will be available soon!",
+    });
+  };
+
+  const handleDeleteClick = (itemId: string) => {
+    setItemToDelete(itemId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteItem = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      const { error } = await supabase
+        .from('items')
+        .delete()
+        .eq('id', itemToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Item Deleted",
+        description: "Your listing has been successfully removed",
+      });
+
+      // Close dialog
+      setIsDeleteDialogOpen(false);
+      setItemToDelete(null);
+
+      // Refresh listings
+      if (refreshListings) {
+        refreshListings();
+      }
+    } catch (error: any) {
+      console.error('Error deleting item:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete item",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <>
       {listings.length > 0 ? (
@@ -31,10 +98,9 @@ const ListingsTab = ({ listings }: ListingsTabProps) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="hover:-translate-y-1 transition-transform duration-200"
+              className="relative group"
             >
               <ItemCard 
-                key={item.id} 
                 id={item.id}
                 title={item.title} 
                 price={item.price} 
@@ -42,6 +108,26 @@ const ListingsTab = ({ listings }: ListingsTabProps) => {
                 location={item.location}
                 date={new Date(item.created_at).toLocaleDateString()} 
               />
+              
+              {/* Overlay with actions */}
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-md">
+                <Button 
+                  size="sm" 
+                  variant="secondary" 
+                  className="flex items-center gap-1"
+                  onClick={() => handleEditItem(item.id)}
+                >
+                  <Edit className="h-4 w-4" /> Edit
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="destructive" 
+                  className="flex items-center gap-1"
+                  onClick={() => handleDeleteClick(item.id)}
+                >
+                  <Trash2 className="h-4 w-4" /> Delete
+                </Button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -59,6 +145,34 @@ const ListingsTab = ({ listings }: ListingsTabProps) => {
           </CardContent>
         </Card>
       )}
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this listing? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteItem}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
