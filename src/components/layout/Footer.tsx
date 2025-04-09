@@ -14,6 +14,7 @@ const Footer = () => {
             <Logo className="h-8" />
             <p className="text-gray-500 text-sm">
               Campus Marketplace is your trusted platform for buying and selling items within the university community.
+              Made by comrades for comrades😁🚀
             </p>
           </div>
           
@@ -47,7 +48,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-200 mt-8 pt-6 text-center">
-          <p className="text-sm text-gray-500">© {currentYear} Campus Marketplace. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {currentYear} Kuza-Market Campus Marketplace. All rights reserved.</p>
         </div>
       </div>
     </footer>
