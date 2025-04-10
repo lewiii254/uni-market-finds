@@ -94,10 +94,10 @@ const Search = () => {
             query = query.order('created_at', { ascending: false });
         }
         
-        // Important: Don't limit the query - get all items matching criteria
         const { data, error } = await query;
         
         if (error) throw error;
+        console.log("Search results:", data?.length, "items found");
         setItems(data || []);
       } catch (error: any) {
         console.error('Error fetching items:', error);

@@ -45,8 +45,12 @@ const CategoryPage = () => {
       try {
         let query = supabase
           .from('items')
-          .select('*')
-          .eq('category', categoryName.toLowerCase());
+          .select('*');
+        
+        // Only apply category filter if not "all"
+        if (categoryName.toLowerCase() !== 'all') {
+          query = query.eq('category', categoryName.toLowerCase());
+        }
         
         // Apply sorting
         switch (sortBy) {
@@ -66,10 +70,10 @@ const CategoryPage = () => {
             query = query.order('created_at', { ascending: false });
         }
         
-        // Important: Don't limit the number of items returned
         const { data, error } = await query;
         
         if (error) throw error;
+        console.log(`Category ${categoryName}: ${data?.length} items found`);
         setItems(data || []);
       } catch (error: any) {
         console.error('Error fetching items:', error);

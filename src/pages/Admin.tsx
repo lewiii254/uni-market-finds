@@ -39,17 +39,22 @@ const AdminPage = () => {
   // Fetch items for admin dashboard
   const fetchItems = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('items')
-      .select('*')
-      .order('created_at', { ascending: false });
-      
-    if (error) {
-      console.error('Error fetching items:', error);
-    } else {
-      setItems(data || []);
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error('Error fetching items:', error);
+      } else {
+        setItems(data || []);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching items:', err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   // Fetch users for admin dashboard
@@ -58,20 +63,24 @@ const AdminPage = () => {
     
     // In a real app, you'd use an admin API to fetch users
     // This is just for demonstration purposes
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, created_at');
-      
-    if (error) {
-      console.error('Error fetching users:', error);
-    } else {
-      // Create mock user data since we can't fetch actual auth users
-      const mockUsers = (data || []).map(profile => ({
-        id: profile.id,
-        email: `user-${profile.id.substring(0, 8)}@example.com`,
-        created_at: profile.created_at
-      }));
-      setUsers(mockUsers);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, created_at');
+        
+      if (error) {
+        console.error('Error fetching users:', error);
+      } else {
+        // Create mock user data since we can't fetch actual auth users
+        const mockUsers = (data || []).map(profile => ({
+          id: profile.id,
+          email: `user-${profile.id.substring(0, 8)}@example.com`,
+          created_at: profile.created_at
+        }));
+        setUsers(mockUsers);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching users:', err);
     }
   };
 
@@ -84,7 +93,8 @@ const AdminPage = () => {
   }, [userIsAdmin]);
 
   const handleItemDeleted = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
+    // Update the local state after successful deletion
+    setItems(prevItems => prevItems.filter(item => item.id !== id));
   };
 
   // Redirect non-admin users

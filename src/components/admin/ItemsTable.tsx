@@ -36,10 +36,15 @@ const ItemsTable: React.FC<ItemsTableProps> = ({ items, isLoading, onItemDeleted
   const handleDeleteItem = async (id: string) => {
     try {
       // First delete any saved items references to prevent foreign key constraints
-      await supabase
+      const { error: savedItemsError } = await supabase
         .from('saved_items')
         .delete()
         .eq('item_id', id);
+      
+      if (savedItemsError) {
+        console.error('Error deleting saved items:', savedItemsError);
+        // Continue with deleting the item even if saved_items deletion fails
+      }
       
       // Then delete the item itself
       const { error } = await supabase
