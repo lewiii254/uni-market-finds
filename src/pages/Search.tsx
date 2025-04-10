@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Input } from '@/components/ui/input';
@@ -65,7 +64,7 @@ const Search = () => {
       try {
         let query = supabase.from('items').select('*');
         
-        // Apply filters
+        // Apply filters (only if they are actually set)
         if (searchTerm) {
           query = query.ilike('title', `%${searchTerm}%`);
         }
@@ -74,7 +73,10 @@ const Search = () => {
           query = query.eq('category', selectedCategory.toLowerCase());
         }
         
-        query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
+        // Only apply price range filter if values are not the defaults
+        if (priceRange[0] > 0 || priceRange[1] < 1000) {
+          query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
+        }
         
         // Apply sorting
         switch (sortBy) {

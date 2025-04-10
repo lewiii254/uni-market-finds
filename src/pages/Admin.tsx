@@ -48,6 +48,7 @@ const AdminPage = () => {
       if (error) {
         console.error('Error fetching items:', error);
       } else {
+        console.log("Admin: Fetched", data?.length, "items");
         setItems(data || []);
       }
     } catch (err) {
@@ -95,6 +96,7 @@ const AdminPage = () => {
   const handleItemDeleted = (id: string) => {
     // Update the local state after successful deletion
     setItems(prevItems => prevItems.filter(item => item.id !== id));
+    console.log("Item removed from state:", id);
   };
 
   // Redirect non-admin users
