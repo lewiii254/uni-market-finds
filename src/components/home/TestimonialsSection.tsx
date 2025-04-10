@@ -19,10 +19,10 @@ const TestimonialsSection = () => {
   };
 
   const testimonials = [
-    { name: "Sarah M.", quote: "Sold my textbooks in just 1 day! Amazing platform!", avatar: "S", university: "Kenyatta University" },
-    { name: "John K.", quote: "Found exactly what I needed at a great price. Highly recommend!", avatar: "J", university: "UoN" },
-    { name: "Michael O.", quote: "Much better than other marketplace apps. The campus focus is perfect!", avatar: "M", university: "Strathmore" },
-    { name: "Lucy W.", quote: "The interface is so intuitive! Made selling my old laptop super easy.", avatar: "L", university: "JKUAT" }
+    { name: "Sarah M.", quote: "Sold my textbooks in just 1 day! Amazing platform!", avatar: "S", university: "Meru University" },
+    { name: "John K.", quote: "Found exactly what I needed at a great price. Highly recommend!", avatar: "J", university: "MUST" },
+    { name: "Michael O.", quote: "Much better than other marketplace apps. The campus focus is perfect!", avatar: "M", university: "Marimba Campus" },
+    { name: "Lucy W.", quote: "The interface is so intuitive! Made selling my old laptop super easy.", avatar: "L", university: "MUST Town Campus" }
   ];
 
   return (
