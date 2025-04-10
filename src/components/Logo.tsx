@@ -5,11 +5,13 @@ import { Link } from 'react-router-dom';
 interface LogoProps {
   size?: 'small' | 'medium' | 'large';
   variant?: 'light' | 'dark';
+  className?: string; // Add className prop
 }
 
 const Logo: React.FC<LogoProps> = ({ 
   size = 'medium', 
-  variant = 'dark' 
+  variant = 'dark',
+  className = '' 
 }) => {
   
   const sizeClasses = {
@@ -24,7 +26,7 @@ const Logo: React.FC<LogoProps> = ({
   };
 
   return (
-    <Link to="/" className="flex items-center">
+    <Link to="/" className={`flex items-center ${className}`}>
       <span className={`font-bold tracking-tight ${sizeClasses[size]} ${colorClasses[variant]}`}>
         <span className="text-marketplace-purple">Kuza</span>
         <span>-Market</span>

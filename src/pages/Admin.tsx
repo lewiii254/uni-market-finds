@@ -17,8 +17,8 @@ interface Item {
   category: string;
   created_at: string;
   user_id: string;
-  image_url: string | null; // Add the missing property
-  location: string; // Add the missing property
+  image_url: string | null;
+  location: string;
 }
 
 interface User {
@@ -37,51 +37,49 @@ const AdminPage = () => {
   const userIsAdmin = isAdmin(user);
 
   // Fetch items for admin dashboard
-  useEffect(() => {
-    if (!userIsAdmin) return;
-    
-    const fetchItems = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('items')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      if (error) {
-        console.error('Error fetching items:', error);
-      } else {
-        setItems(data || []);
-      }
-      setIsLoading(false);
-    };
-    
-    fetchItems();
-  }, [userIsAdmin]);
+  const fetchItems = async () => {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('items')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching items:', error);
+    } else {
+      setItems(data || []);
+    }
+    setIsLoading(false);
+  };
 
   // Fetch users for admin dashboard
+  const fetchUsers = async () => {
+    if (!userIsAdmin) return;
+    
+    // In a real app, you'd use an admin API to fetch users
+    // This is just for demonstration purposes
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, created_at');
+      
+    if (error) {
+      console.error('Error fetching users:', error);
+    } else {
+      // Create mock user data since we can't fetch actual auth users
+      const mockUsers = (data || []).map(profile => ({
+        id: profile.id,
+        email: `user-${profile.id.substring(0, 8)}@example.com`,
+        created_at: profile.created_at
+      }));
+      setUsers(mockUsers);
+    }
+  };
+
+  // Initial data fetch
   useEffect(() => {
     if (!userIsAdmin) return;
     
-    const fetchUsers = async () => {
-      // In a real app, you'd use an admin API to fetch users
-      // This is just for demonstration purposes
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, created_at');
-        
-      if (error) {
-        console.error('Error fetching users:', error);
-      } else {
-        // Create mock user data since we can't fetch actual auth users
-        const mockUsers = (data || []).map(profile => ({
-          id: profile.id,
-          email: `user-${profile.id.substring(0, 8)}@example.com`,
-          created_at: profile.created_at
-        }));
-        setUsers(mockUsers);
-      }
-    };
-    
+    fetchItems();
     fetchUsers();
   }, [userIsAdmin]);
 

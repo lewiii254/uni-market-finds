@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Table,
@@ -34,6 +35,13 @@ const ItemsTable: React.FC<ItemsTableProps> = ({ items, isLoading, onItemDeleted
 
   const handleDeleteItem = async (id: string) => {
     try {
+      // First delete any saved items references to prevent foreign key constraints
+      await supabase
+        .from('saved_items')
+        .delete()
+        .eq('item_id', id);
+      
+      // Then delete the item itself
       const { error } = await supabase
         .from('items')
         .delete()
@@ -46,6 +54,7 @@ const ItemsTable: React.FC<ItemsTableProps> = ({ items, isLoading, onItemDeleted
         description: "The listing has been successfully removed",
       });
       
+      // Notify parent component about successful deletion
       onItemDeleted(id);
     } catch (error: any) {
       console.error('Error deleting item:', error);
