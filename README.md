@@ -1,73 +1,128 @@
-# Welcome to your Lovable project
+# 🌾 Kuza Market
 
-## Project info
+Welcome to **Kuza Market** – a modern digital platform connecting farmers and buyers across Kenya! 🇰🇪 Whether you're selling fresh produce, browsing for farm products, or managing your agri-profile, Kuza Market simplifies everything. 🌱📲
 
-**URL**: https://lovable.dev/projects/d8f46ea2-8f00-4cb0-9d50-56f49b959d2c
+---
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+### 👩‍💼 Admin Panel
+- 🔐 Secure Admin Login
+- 🧑‍🌾 Manage Users & Profiles
+- 📦 Product Listing Oversight
+- 🚨 Handle Reports
 
-**Use Lovable**
+### 👤 User Profile
+- ✅ Sign Up / Login
+- 🧾 Add and Manage Listings
+- 📸 Profile Customization
+- 💬 Chat via WhatsApp or Email
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d8f46ea2-8f00-4cb0-9d50-56f49b959d2c) and start prompting.
+### 🛒 Marketplace
+- 🥬 Explore Farmer Products
+- 📍 Filter by Category / Location
+- 📨 Contact via WhatsApp or Email (No in-app transactions yet!)
+- ❤️ Wishlist (coming soon)
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🛠️ Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+You can work locally in your favorite IDE, use GitHub Codespaces, or even edit directly on GitHub!
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
+
+### ✅ Use Your Preferred IDE
+
+> The only requirement is having **Node.js & npm installed** (we recommend installing via `nvm`).
 
 Follow these steps:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+```bash
+# Step 1: Clone the repository
+git clone https://github.com/your-username/kuza-market.git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Step 2: Navigate into the project folder
+cd kuza-market
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Step 3: Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Start the development server
 npm run dev
 ```
+### ✏️ Edit Directly on GitHub
+Navigate to the desired file in this repo
 
-**Edit a file directly in GitHub**
+Click the ✏️ Edit button (top right)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Make your changes and commit them directly to the branch
 
-**Use GitHub Codespaces**
+### 💻 Use GitHub Codespaces
+Go to the repo's main page
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Click the green Code button
 
-## What technologies are used for this project?
+Select the Codespaces tab
 
-This project is built with:
+Click "New codespace" to launch it
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Make edits and commit when done
 
-## How can I deploy this project?
+## 🧰 Tech Stack
 
-Simply open [Lovable](https://lovable.dev/projects/d8f46ea2-8f00-4cb0-9d50-56f49b959d2c) and click on Share -> Publish.
+### 🔧 Technology and its ⚙️ Description
+- ⚡ Vite	Lightning-fast dev environment
+- 📘 TypeScript	Type-safe JavaScript
+-  React	Frontend UI framework
+- 💨 Tailwind CSS	Utility-first CSS styling
+- 🧱 shadcn/ui	Beautiful & accessible UI components
 
-## Can I connect a custom domain to my Lovable project?
+## 📸 Screenshots
+Add screenshots here to showcase your app!
 
-Yes it is!
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 📲 Contact System
+🚫 No in-app payment/transaction functionality yet.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+✅ Users connect directly through:
+
+📞 WhatsApp
+
+📧 Email Us
+
+This keeps things lean, personal, and simple for now.
+
+## 🌱 Upcoming Features
+💳 M-Pesa Integration
+
+🛍️ Add to Cart & Checkout
+
+🗺️ Map-based Farm Locator
+
+📊 Admin Analytics Dashboard
+
+❤️ Wishlist & Save for Later
+
+## 🤝 Contributing
+We 💚 contributions!
+```
+# Fork this repo
+# Create a feature branch
+git checkout -b feature/your-feature-name
+
+# Commit your changes
+git commit -m "✨ Added your feature"
+
+# Push and create a Pull Request
+```
+
+## 📬 Contact & Support
+🌐 Website: Kuza Market
+
+📞 WhatsApp: +254 790767347
+
+📧 Email: support@kuzamarket.com
+
+## ⭐ Show Some Love
+### If you like this project, give it a ⭐ on GitHub. Every star helps us grow! 💫
