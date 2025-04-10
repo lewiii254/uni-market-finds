@@ -88,6 +88,13 @@ const ItemDetails = () => {
     fetchItemDetails();
   }, [id, toast]);
   
+  // Create WhatsApp message with item details
+  const createWhatsAppMessage = (item: ItemDetailType) => {
+    return encodeURIComponent(
+      `Hi there! I'm interested in your "${item.title}" for KSH ${item.price.toLocaleString()} that I saw on KuzaMarket. Is it still available?`
+    );
+  };
+  
   if (isLoading) {
     return (
       <PageLayout>
@@ -211,7 +218,7 @@ const ItemDetails = () => {
                   </a>
                   {itemDetails.contact_phone && (
                     <a 
-                      href={`https://wa.me/${itemDetails.contact_phone.replace(/[^0-9]/g, '')}`} 
+                      href={`https://wa.me/${itemDetails.contact_phone.replace(/[^0-9]/g, '')}?text=${createWhatsAppMessage(itemDetails)}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                     >

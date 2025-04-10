@@ -32,6 +32,7 @@ const AdminPage = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
 
   // Check if current user is admin using the isAdmin function
   const userIsAdmin = isAdmin(user);
@@ -62,8 +63,6 @@ const AdminPage = () => {
   const fetchUsers = async () => {
     if (!userIsAdmin) return;
     
-    // In a real app, you'd use an admin API to fetch users
-    // This is just for demonstration purposes
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -91,12 +90,14 @@ const AdminPage = () => {
     
     fetchItems();
     fetchUsers();
-  }, [userIsAdmin]);
+  }, [userIsAdmin, lastRefresh]);
 
   const handleItemDeleted = (id: string) => {
     // Update the local state after successful deletion
     setItems(prevItems => prevItems.filter(item => item.id !== id));
     console.log("Item removed from state:", id);
+    // Force a refresh of the data
+    setLastRefresh(Date.now());
   };
 
   // Redirect non-admin users
