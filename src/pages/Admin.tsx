@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ItemsTable from '@/components/admin/ItemsTable';
 import UsersTable from '@/components/admin/UsersTable';
 import StatsOverview from '@/components/admin/StatsOverview';
+import { useToast } from '@/hooks/use-toast';
 
 interface Item {
   id: string;
@@ -29,6 +30,7 @@ interface User {
 
 const AdminPage = () => {
   const { user, isAdmin } = useAuth();
+  const { toast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,12 +50,22 @@ const AdminPage = () => {
         
       if (error) {
         console.error('Error fetching items:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch items",
+          variant: "destructive",
+        });
       } else {
         console.log("Admin: Fetched", data?.length, "items");
         setItems(data || []);
       }
     } catch (err) {
       console.error('Unexpected error fetching items:', err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -96,8 +108,11 @@ const AdminPage = () => {
     // Update the local state after successful deletion
     setItems(prevItems => prevItems.filter(item => item.id !== id));
     console.log("Item removed from state:", id);
-    // Force a refresh of the data
-    setLastRefresh(Date.now());
+    
+    // Force a complete refresh of the data to ensure we have the latest state
+    setTimeout(() => {
+      setLastRefresh(Date.now());
+    }, 500);
   };
 
   // Redirect non-admin users
