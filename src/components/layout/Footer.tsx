@@ -42,13 +42,13 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li className="text-gray-500">Email: support@campusmarketplace.com</li>
               <li className="text-gray-500">Phone: +254 790767347</li>
-              <li className="text-gray-500">Location: Student Center, Main Campus</li>
+              <li className="text-gray-500">Location: Student Center, Main Campus Meru University</li>
             </ul>
           </div>
         </div>
         
         <div className="border-t border-gray-200 mt-8 pt-6 text-center">
-          <p className="text-sm text-gray-500">© {currentYear} Kuza-Market Campus Marketplace. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© {currentYear} Kuza-Market Campus Marketplace. All rights reserved. Built By Comrades For Comrades😁</p>
         </div>
       </div>
     </footer>
