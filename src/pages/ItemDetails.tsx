@@ -133,7 +133,7 @@ const ItemDetails = () => {
     return (
       <PageLayout>
         <div className="max-w-4xl mx-auto py-6 text-center">
-          <h1 className="text-2xl font-bold mb-4">Item Not Found</h1>
+          <h1 className="text-2xl font-bold mb-4">Item Not Found💀</h1>
           <p className="mb-6">The listing you're looking for doesn't exist or has been removed.</p>
           <Link to="/">
             <Button>Back to Home</Button>
