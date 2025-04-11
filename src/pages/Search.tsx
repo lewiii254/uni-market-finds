@@ -9,8 +9,9 @@ import { SearchIcon, FilterIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
+import { useSearchHistory } from '@/hooks/useSearchHistory';
 
 const categories = [
   "All Categories",
@@ -44,7 +45,6 @@ const SearchPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Get query params or default values
   const initialQuery = searchParams.get('q') || '';
   const initialCategory = searchParams.get('category') || 'All Categories';
   const initialMinPrice = parseFloat(searchParams.get('min_price') || '0');
@@ -57,37 +57,20 @@ const SearchPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState(initialSort);
   const [isLoading, setIsLoading] = useState(true);
-  const [items, setItems] = useState<ItemData[]>([]);
+  const [items, setItems] = useState<any[]>([]);
   const [searchPerformed, setSearchPerformed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  // Track when the user performs a search
-  useEffect(() => {
-    const trackSearch = async () => {
-      // Only track if user is logged in and search was performed (not initial load)
-      if (user && searchPerformed && searchQuery.trim()) {
-        try {
-          await supabase.from('user_searches').insert({
-            user_id: user.id,
-            search_query: searchQuery.trim().toLowerCase()
-          });
-        } catch (error) {
-          console.error('Error tracking search:', error);
-        }
-      }
-    };
-    
-    trackSearch();
-  }, [searchPerformed, searchQuery, user]);
+  useSearchHistory({
+    query: searchTerm,
+    isSearching: searchPerformed
+  });
 
-  // Fetch items from database
   useEffect(() => {
     async function fetchItems() {
       setIsLoading(true);
       try {
         let query = supabase.from('items').select('*');
         
-        // Apply filters (only if they are actually set)
         if (searchTerm) {
           query = query.ilike('title', `%${searchTerm}%`);
         }
@@ -96,12 +79,10 @@ const SearchPage = () => {
           query = query.eq('category', selectedCategory.toLowerCase());
         }
         
-        // Only apply price range filter if values are not the defaults
         if (priceRange[0] > 0 || priceRange[1] < 1000) {
           query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
         }
         
-        // Apply sorting
         switch (sortBy) {
           case 'newest':
             query = query.order('created_at', { ascending: false });
@@ -139,7 +120,6 @@ const SearchPage = () => {
     fetchItems();
   }, [searchTerm, selectedCategory, priceRange, sortBy, toast]);
   
-  // Update URL params when filters change
   useEffect(() => {
     const params: Record<string, string> = {};
     
@@ -155,8 +135,6 @@ const SearchPage = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchPerformed(true);
-    setSearchQuery(searchTerm);
-    // Search functionality is already handled by the useEffect
   };
   
   const resetFilters = () => {
@@ -165,11 +143,10 @@ const SearchPage = () => {
     setPriceRange([0, 1000]);
     setSortBy('newest');
   };
-  
+
   return (
     <PageLayout>
       <div className="space-y-6">
-        {/* Search Bar */}
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -191,7 +168,6 @@ const SearchPage = () => {
           </Button>
         </form>
         
-        {/* Filters Section */}
         {showFilters && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -263,7 +239,6 @@ const SearchPage = () => {
           </motion.div>
         )}
         
-        {/* Results */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Results</h2>

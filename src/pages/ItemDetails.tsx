@@ -8,7 +8,6 @@ import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import SaveButton from '@/components/SaveButton';
-import PickupPoints from '@/components/PickupPoints';
 import { motion } from 'framer-motion';
 
 type ItemDetailType = {
@@ -76,14 +75,20 @@ const ItemDetails = () => {
         }
         
         // Track view for recommendation system if not the seller
+        // We need to create the item_views table first
+        // Comment out for now
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user && session.user.id !== item.user_id) {
-          await supabase.from('item_views').insert({
-            item_id: id,
-            user_id: session.user.id
-          }).onError(() => {
-            // Silently fail if tracking fails
-          });
+          // console.log('Would track view:', {
+          //   item_id: id,
+          //   user_id: session.user.id
+          // });
+          
+          // Uncomment after creating the table:
+          // await supabase.from('item_views').insert({
+          //   item_id: id,
+          //   user_id: session.user.id
+          // });
         }
       } catch (error: any) {
         console.error('Error fetching item details:', error);

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { User } from '@supabase/supabase-js';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,51 +38,13 @@ const RecommendationsSection = () => {
       if (!user) return [];
       
       try {
-        // Fetch the user's recent searches
-        const { data: searches } = await supabase
-          .from('user_searches')
-          .select('search_query')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(5);
-          
-        // Fetch the user's profile to get interests
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('university')
-          .eq('id', user.id)
-          .single();
-          
-        // Create a recommendation algorithm based on search history and campus
-        let query = supabase
+        // For now, just fetch recent items as recommendations
+        // In a real app, we'd use search history and user preferences
+        const { data, error } = await supabase
           .from('items')
           .select('id, title, price, image_url, location, created_at, category')
+          .order('created_at', { ascending: false })
           .limit(6);
-          
-        // If we have search history, use it to filter items
-        if (searches && searches.length > 0) {
-          const keywords = searches.flatMap(s => 
-            s.search_query.toLowerCase().split(' ')
-          );
-          
-          if (keywords.length > 0) {
-            // Filter items that match recent search keywords
-            query = query.or(
-              keywords.map(keyword => 
-                `title.ilike.%${keyword}%,category.ilike.%${keyword}%`
-              ).join(',')
-            );
-          }
-        }
-        
-        // If user is from a specific campus, prioritize items from there
-        if (profile?.university) {
-          query = query.or(`location.ilike.%${profile.university}%`);
-        }
-        
-        // Add final ordering and fetch
-        const { data, error } = await query
-          .order('created_at', { ascending: false });
           
         if (error) throw error;
         return data || [];
@@ -96,7 +57,7 @@ const RecommendationsSection = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  // If user is not logged in, show a simple message
+  // If user is not logged in, show nothing
   if (!user) {
     return null;
   }
