@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import SaveButton from '@/components/SaveButton';
+import PickupPoints from '@/components/PickupPoints';
 import { motion } from 'framer-motion';
 
 type ItemDetailType = {
@@ -73,6 +74,17 @@ const ItemDetails = () => {
         if (!sellerError) {
           setSeller(sellerData);
         }
+        
+        // Track view for recommendation system if not the seller
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && session.user.id !== item.user_id) {
+          await supabase.from('item_views').insert({
+            item_id: id,
+            user_id: session.user.id
+          }).onError(() => {
+            // Silently fail if tracking fails
+          });
+        }
       } catch (error: any) {
         console.error('Error fetching item details:', error);
         toast({
@@ -91,7 +103,7 @@ const ItemDetails = () => {
   // Create WhatsApp message with item details
   const createWhatsAppMessage = (item: ItemDetailType) => {
     return encodeURIComponent(
-      `Hi there! I'm interested in your "${item.title}" for KSH ${item.price.toLocaleString()} that I saw on KuzaMarket. Is it still available?`
+      `Hi there! I'm interested in your "${item.title}" for KSH ${item.price.toLocaleString()} that I saw on KuzaMarket. Is it still available? Can we meet at one of the safe pickup points?`
     );
   };
   
@@ -198,6 +210,9 @@ const ItemDetails = () => {
               <h3 className="font-medium mb-2">Description</h3>
               <p className="text-gray-700">{itemDetails.description}</p>
             </Card>
+            
+            {/* Pickup Points Integration */}
+            <PickupPoints itemLocation={itemDetails.location} />
             
             <Card className="p-4">
               <h3 className="font-medium mb-3">Contact Seller</h3>

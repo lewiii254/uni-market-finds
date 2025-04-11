@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Import the components
 import HeroSection from '@/components/home/HeroSection';
@@ -13,6 +14,7 @@ import FeaturesSection from '@/components/home/FeaturesSection';
 import ItemsSection from '@/components/home/ItemsSection';
 import CallToAction from '@/components/home/CallToAction';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
+import RecommendationsSection from '@/components/home/RecommendationsSection';
 
 interface Item {
   id: string;
@@ -24,6 +26,7 @@ interface Item {
 }
 
 const HomePage = () => {
+  const { user } = useAuth();
   const [featuredItems, setFeaturedItems] = useState<Item[]>([]);
   const [recentItems, setRecentItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -125,6 +128,9 @@ const HomePage = () => {
         
         {/* Features section */}
         <FeaturesSection />
+        
+        {/* Recommendations section for logged in users */}
+        {user && <RecommendationsSection />}
         
         {/* Categories section */}
         <motion.div

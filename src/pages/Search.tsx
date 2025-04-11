@@ -9,6 +9,7 @@ import { SearchIcon, FilterIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { motion } from 'framer-motion';
 
 const categories = [
@@ -38,9 +39,10 @@ const sortOptions = [
   { label: "Price: High to Low", value: "price_desc" }
 ];
 
-const Search = () => {
+const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Get query params or default values
   const initialQuery = searchParams.get('q') || '';
@@ -56,7 +58,28 @@ const Search = () => {
   const [sortBy, setSortBy] = useState(initialSort);
   const [isLoading, setIsLoading] = useState(true);
   const [items, setItems] = useState<ItemData[]>([]);
-  
+  const [searchPerformed, setSearchPerformed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Track when the user performs a search
+  useEffect(() => {
+    const trackSearch = async () => {
+      // Only track if user is logged in and search was performed (not initial load)
+      if (user && searchPerformed && searchQuery.trim()) {
+        try {
+          await supabase.from('user_searches').insert({
+            user_id: user.id,
+            search_query: searchQuery.trim().toLowerCase()
+          });
+        } catch (error) {
+          console.error('Error tracking search:', error);
+        }
+      }
+    };
+    
+    trackSearch();
+  }, [searchPerformed, searchQuery, user]);
+
   // Fetch items from database
   useEffect(() => {
     async function fetchItems() {
@@ -131,6 +154,8 @@ const Search = () => {
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchPerformed(true);
+    setSearchQuery(searchTerm);
     // Search functionality is already handled by the useEffect
   };
   
@@ -286,4 +311,4 @@ const Search = () => {
   );
 };
 
-export default Search;
+export default SearchPage;
