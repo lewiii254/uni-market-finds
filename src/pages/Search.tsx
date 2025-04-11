@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Input } from '@/components/ui/input';
@@ -6,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import ItemCard from '@/components/ItemCard';
-import { SearchIcon, FilterIcon, MapPinIcon } from 'lucide-react';
+import { SearchIcon, FilterIcon, MapPinIcon, TagIcon, TrendingUpIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { useSearchHistory } from '@/hooks/useSearchHistory';
+import { Badge } from '@/components/ui/badge';
 
 const categories = [
   "Electronics",
@@ -58,12 +58,29 @@ const SearchPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchPerformed, setSearchPerformed] = useState(false);
+  const [trendingSearches, setTrendingSearches] = useState<string[]>([]);
   
-  // Use the search history hook to track searches
   useSearchHistory({
     query: searchQuery,
-    isSearching: searchPerformed
+    isSearching: searchPerformed,
+    category: category,
+    location: location,
+    priceRange: priceRange
   });
+  
+  useEffect(() => {
+    const fetchTrendingSearches = async () => {
+      setTrendingSearches([
+        "textbooks",
+        "laptop",
+        "furniture",
+        "calculator",
+        "bike"
+      ]);
+    };
+    
+    fetchTrendingSearches();
+  }, []);
   
   useEffect(() => {
     const performSearch = async () => {
@@ -81,25 +98,20 @@ const SearchPage = () => {
           .from('items')
           .select('*');
         
-        // Apply search query filter if provided
         if (searchQuery.trim()) {
           query = query.ilike('title', `%${searchQuery}%`);
         }
         
-        // Apply category filter if provided and not "all"
         if (category && category !== 'all') {
           query = query.eq('category', category.toLowerCase());
         }
         
-        // Apply location filter if provided and not "all"
         if (location && location !== 'all') {
           query = query.ilike('location', `%${location}%`);
         }
         
-        // Apply price range filter
         query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
         
-        // Apply sorting
         switch (sortBy) {
           case 'price_asc':
             query = query.order('price', { ascending: true });
@@ -111,7 +123,6 @@ const SearchPage = () => {
             query = query.order('created_at', { ascending: false });
             break;
           default:
-            // Implement relevance sort if possible, otherwise default to date
             query = query.order('created_at', { ascending: false });
             break;
         }
@@ -151,6 +162,18 @@ const SearchPage = () => {
     });
   };
   
+  const handleApplyTrendingSearch = (term: string) => {
+    setSearchQuery(term);
+    setSearchParams({ 
+      q: term,
+      category: category,
+      location: location,
+      price_min: priceRange[0].toString(),
+      price_max: priceRange[1].toString(),
+      sort: sortBy
+    });
+  };
+  
   return (
     <PageLayout>
       <motion.div
@@ -173,6 +196,27 @@ const SearchPage = () => {
           </Button>
         </form>
         
+        {!searchPerformed && trendingSearches.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUpIcon className="h-4 w-4 text-marketplace-purple" />
+              <h3 className="text-sm font-medium">Trending Searches</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {trendingSearches.map((term) => (
+                <Badge 
+                  key={term} 
+                  variant="outline" 
+                  className="cursor-pointer hover:bg-marketplace-purple hover:text-white transition-colors"
+                  onClick={() => handleApplyTrendingSearch(term)}
+                >
+                  {term}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <div className="flex flex-col md:flex-row gap-4">
           <div className="md:w-1/4 p-4 rounded-md border">
             <h3 className="text-xl font-semibold mb-4 flex items-center">
@@ -181,7 +225,10 @@ const SearchPage = () => {
             </h3>
             
             <div className="mb-4">
-              <h4 className="font-semibold mb-2">Category</h4>
+              <h4 className="font-semibold mb-2 flex items-center">
+                <TagIcon className="mr-2 h-4 w-4 text-marketplace-purple" />
+                Category
+              </h4>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Categories" />
@@ -196,17 +243,18 @@ const SearchPage = () => {
             </div>
 
             <div className="mb-4">
-              <h4 className="font-semibold mb-2">Location</h4>
+              <h4 className="font-semibold mb-2 flex items-center">
+                <MapPinIcon className="mr-2 h-4 w-4 text-marketplace-purple" />
+                Location
+              </h4>
               <Select value={location} onValueChange={setLocation}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Locations" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Locations</SelectItem>
-                  {locations.map((loc) => (
-                    <SelectItem key={loc} value={loc !== "All Locations" ? loc : "all"}>
-                      {loc}
-                    </SelectItem>
+                  {locations.filter(loc => loc !== "All Locations").map((loc) => (
+                    <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
