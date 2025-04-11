@@ -1,6 +1,6 @@
-# 🌾 Kuza Market
+# 🚀 Kuza Market
 
-Welcome to **Kuza Market** – a modern digital platform connecting farmers and buyers across Kenya! 🇰🇪 Whether you're selling fresh produce, browsing for farm products, or managing your agri-profile, Kuza Market simplifies everything. 🌱📲
+Welcome to **Kuza Market** – a modern digital platform connecting Sellers and buyers across College! 🇰🇪 Whether you're selling second hand goods or buying them Kuza Market simplifies everything. ✨📲
 
 ### [😁Click Here to Visit The🌐Live Demo🚀](https://kuzamarket2.vercel.app/)
 ---
