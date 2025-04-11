@@ -9,7 +9,7 @@ Welcome to **Kuza Market** – a modern digital platform connecting Sellers and 
 
 ### 👩‍💼 Admin Panel
 - 🔐 Secure Admin Login
-- 🧑‍🌾 Manage Users & Profiles
+- 🧑 Manage Users & Profiles
 - 📦 Product Listing Oversight
 - 🚨 Handle Reports
 
@@ -20,10 +20,10 @@ Welcome to **Kuza Market** – a modern digital platform connecting Sellers and 
 - 💬 Chat via WhatsApp or Email
 
 ### 🛒 Marketplace
-- 🥬 Explore Farmer Products
+- 🥬 Explore Second Hand Products
 - 📍 Filter by Category / Location
 - 📨 Contact via WhatsApp or Email (No in-app transactions yet!)
-- ❤️ Wishlist (coming soon)
+- ❤️ Wishlist
 
 ---
 
