@@ -108,11 +108,6 @@ const AdminPage = () => {
     // Update the local state after successful deletion
     setItems(prevItems => prevItems.filter(item => item.id !== id));
     console.log("Item removed from state:", id);
-    
-    // Force a complete refresh of the data to ensure we have the latest state
-    setTimeout(() => {
-      setLastRefresh(Date.now());
-    }, 500);
   };
 
   // Redirect non-admin users

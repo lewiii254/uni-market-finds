@@ -12,6 +12,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Item {
   id: string;
@@ -32,9 +43,12 @@ interface ItemsTableProps {
 
 const ItemsTable: React.FC<ItemsTableProps> = ({ items, isLoading, onItemDeleted }) => {
   const { toast } = useToast();
+  const [itemToDelete, setItemToDelete] = React.useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const handleDeleteItem = async (id: string) => {
     try {
+      setIsDeleting(true);
       console.log("Attempting to delete item:", id);
       
       // First delete any saved items references
@@ -75,6 +89,9 @@ const ItemsTable: React.FC<ItemsTableProps> = ({ items, isLoading, onItemDeleted
         description: error.message || "Failed to delete item",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
+      setItemToDelete(null);
     }
   };
 
@@ -124,13 +141,34 @@ const ItemsTable: React.FC<ItemsTableProps> = ({ items, isLoading, onItemDeleted
                 <TableCell>{item.location}</TableCell>
                 <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    onClick={() => handleDeleteItem(item.id)}
-                  >
-                    Delete
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                      >
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the listing "{item.title}" and cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => handleDeleteItem(item.id)}
+                          disabled={isDeleting && itemToDelete === item.id}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          {isDeleting && itemToDelete === item.id ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </TableCell>
               </TableRow>
             ))
