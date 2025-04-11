@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import SaveButton from '@/components/SaveButton';
 import { motion } from 'framer-motion';
+import PickupPoints from '@/components/PickupPoints';
 
 type ItemDetailType = {
   id: string;

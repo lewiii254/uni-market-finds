@@ -9,6 +9,35 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      item_views: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_views_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       items: {
         Row: {
           category: string
@@ -51,6 +80,36 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      pickup_points: {
+        Row: {
+          campus: string | null
+          coordinates: string | null
+          created_at: string
+          description: string | null
+          id: string
+          location: string
+          name: string
+        }
+        Insert: {
+          campus?: string | null
+          coordinates?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location: string
+          name: string
+        }
+        Update: {
+          campus?: string | null
+          coordinates?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string
+          name?: string
         }
         Relationships: []
       }
@@ -112,6 +171,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_searches: {
+        Row: {
+          created_at: string
+          id: string
+          search_query: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          search_query: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          search_query?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
