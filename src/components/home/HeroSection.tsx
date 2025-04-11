@@ -41,7 +41,7 @@ const HeroSection = () => {
           className="text-lg md:text-xl text-white/90 mb-8"
           variants={fadeInUp}
         >
-          Buy, sell, and discover amazing deals within your university community
+          Buy, sell, and discover amazing deals within your university community🤼
         </motion.p>
         
         <motion.div 
