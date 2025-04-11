@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import { Input } from '@/components/ui/input';
@@ -198,7 +199,15 @@ const SearchPage = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {searchResults.map((item: any) => (
-                  <ItemCard key={item.id} item={item} />
+                  <ItemCard 
+                    key={item.id} 
+                    id={item.id}
+                    title={item.title}
+                    price={item.price}
+                    image={item.image_url || ''}
+                    location={item.location || 'Unknown location'}
+                    date={new Date(item.created_at).toLocaleDateString()}
+                  />
                 ))}
                 {searchResults.length === 0 && searchPerformed && (
                   <div className="text-center col-span-full">No results found.</div>
