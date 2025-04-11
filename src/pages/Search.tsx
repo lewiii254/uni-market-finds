@@ -22,7 +22,6 @@ const categories = [
   "Other"
 ];
 
-// Common locations for filtering
 const locations = [
   "All Locations", 
   "Hostel A", 
@@ -50,9 +49,10 @@ const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
   const [location, setLocation] = useState(searchParams.get('location') || 'all');
-  const [priceRange, setPriceRange] = useState([
-    parseInt(searchParams.get('price_min') || '0'),
-    parseInt(searchParams.get('price_max') || '1000')
+  
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    parseInt(searchParams.get('price_min') || '0', 10) || 0,
+    parseInt(searchParams.get('price_max') || '1000', 10) || 1000
   ]);
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'relevance');
   const [searchResults, setSearchResults] = useState([]);
@@ -174,6 +174,14 @@ const SearchPage = () => {
     });
   };
   
+  const handlePriceRangeChange = (values: number[]) => {
+    const newPriceRange: [number, number] = [
+      values[0] ?? 0,
+      values[1] ?? 1000
+    ];
+    setPriceRange(newPriceRange);
+  };
+  
   return (
     <PageLayout>
       <motion.div
@@ -266,7 +274,7 @@ const SearchPage = () => {
                 defaultValue={priceRange}
                 max={1000}
                 step={10}
-                onValueChange={setPriceRange}
+                onValueChange={handlePriceRangeChange}
               />
               <div className="flex justify-between text-sm text-gray-500">
                 <span>KSH {priceRange[0]}</span>
