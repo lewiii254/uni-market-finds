@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -29,7 +28,6 @@ const ListingForm = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
-  // Form fields
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
@@ -63,10 +61,18 @@ const ListingForm = () => {
       return;
     }
     
+    if (!category) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a category for your listing.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       setIsLoading(true);
       
-      // Upload image if provided
       let imageUrl = null;
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
@@ -81,12 +87,10 @@ const ListingForm = () => {
           throw uploadError;
         }
         
-        // Get the public URL
         const { data } = supabase.storage.from('marketplace').getPublicUrl(filePath);
         imageUrl = data.publicUrl;
       }
       
-      // Create the item listing
       const { error } = await supabase
         .from('items')
         .insert({
@@ -108,7 +112,6 @@ const ListingForm = () => {
         description: "Your item has been listed successfully.",
       });
       
-      // Redirect to homepage to see the new listing
       navigate('/');
     } catch (error: any) {
       console.error('Error creating listing:', error);
@@ -131,7 +134,6 @@ const ListingForm = () => {
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Item Details */}
           <div className="space-y-4">
             <div>
               <Label htmlFor="title">Item Title</Label>
@@ -160,7 +162,7 @@ const ListingForm = () => {
               </div>
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Select value={category} onValueChange={setCategory}>
+                <Select value={category || "electronics"} onValueChange={setCategory}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -188,7 +190,6 @@ const ListingForm = () => {
             </div>
           </div>
 
-          {/* Location & Contact */}
           <div className="space-y-4">
             <div>
               <Label htmlFor="location">Location on Campus</Label>
@@ -225,7 +226,6 @@ const ListingForm = () => {
             </div>
           </div>
 
-          {/* Image Upload */}
           <div>
             <Label htmlFor="image">Upload Image</Label>
             <div className="mt-2 flex flex-col items-center space-y-4">

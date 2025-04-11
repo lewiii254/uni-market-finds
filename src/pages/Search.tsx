@@ -35,7 +35,7 @@ const SearchPage = () => {
   const { user } = useAuth();
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || '');
+  const [category, setCategory] = useState(searchParams.get('category') || 'all'); // Changed default to 'all' instead of empty string
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'relevance');
   const [searchResults, setSearchResults] = useState([]);
@@ -65,7 +65,7 @@ const SearchPage = () => {
           .select('*')
           .ilike('title', `%${searchQuery}%`);
         
-        if (category && category !== '') {
+        if (category && category !== 'all') { // Changed from empty string check to 'all' check
           query = query.eq('category', category);
         }
         
@@ -156,9 +156,9 @@ const SearchPage = () => {
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem> {/* Changed from empty string to 'all' */}
                   {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    <SelectItem key={cat} value={cat.toLowerCase()}>{cat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
