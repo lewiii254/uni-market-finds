@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import ItemCard from '@/components/ItemCard';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MapPinIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type ItemData = {
@@ -26,11 +26,25 @@ const sortOptions = [
   { label: "Price: High to Low", value: "price_desc" }
 ];
 
+// Common locations for filtering
+const locations = [
+  "All Locations", 
+  "Hostel A", 
+  "Hostel B", 
+  "Hostel C", 
+  "Hostel D", 
+  "Campus Center", 
+  "Library", 
+  "Nchiiru", 
+  "Kianjai"
+];
+
 const CategoryPage = () => {
   const { categoryName } = useParams<{ categoryName: string }>();
   const [items, setItems] = useState<ItemData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState('newest');
+  const [location, setLocation] = useState('all');
   const { toast } = useToast();
 
   const categoryDisplayName = categoryName ? 
@@ -50,6 +64,11 @@ const CategoryPage = () => {
         // Only apply category filter if not "all"
         if (categoryName.toLowerCase() !== 'all') {
           query = query.eq('category', categoryName.toLowerCase());
+        }
+        
+        // Apply location filter if not "all"
+        if (location !== 'all') {
+          query = query.ilike('location', `%${location}%`);
         }
         
         // Apply sorting
@@ -88,7 +107,7 @@ const CategoryPage = () => {
     };
     
     fetchItems();
-  }, [categoryName, sortBy, toast]);
+  }, [categoryName, sortBy, location, toast]);
   
   return (
     <PageLayout>
@@ -103,20 +122,37 @@ const CategoryPage = () => {
             <h1 className="text-2xl font-bold">{categoryDisplayName}</h1>
           </div>
           
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500 whitespace-nowrap">Sort by:</span>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <MapPinIcon size={16} className="text-gray-500" />
+              <Select value={location} onValueChange={setLocation}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="All Locations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {locations.filter(loc => loc !== "All Locations").map(loc => (
+                    <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm text-gray-500 whitespace-nowrap">Sort by:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         
@@ -146,7 +182,7 @@ const CategoryPage = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-lg text-gray-500">No items found in this category.</p>
+            <p className="text-lg text-gray-500">No items found in this category{location !== 'all' ? ` at ${location}` : ''}.</p>
             <div className="mt-4">
               <Link to="/add-listing">
                 <Button>Add New Listing</Button>

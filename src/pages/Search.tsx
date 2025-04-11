@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import ItemCard from '@/components/ItemCard';
-import { SearchIcon, FilterIcon } from 'lucide-react';
+import { SearchIcon, FilterIcon, MapPinIcon } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +22,19 @@ const categories = [
   "Other"
 ];
 
+// Common locations for filtering
+const locations = [
+  "All Locations", 
+  "Hostel A", 
+  "Hostel B", 
+  "Hostel C", 
+  "Hostel D", 
+  "Campus Center", 
+  "Library", 
+  "Nchiiru", 
+  "Kianjai"
+];
+
 const sortOptions = [
   { label: 'Relevance', value: 'relevance' },
   { label: 'Price: Low to High', value: 'price_asc' },
@@ -35,8 +48,12 @@ const SearchPage = () => {
   const { user } = useAuth();
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || 'all'); // Changed default to 'all' instead of empty string
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [category, setCategory] = useState(searchParams.get('category') || 'all');
+  const [location, setLocation] = useState(searchParams.get('location') || 'all');
+  const [priceRange, setPriceRange] = useState([
+    parseInt(searchParams.get('price_min') || '0'),
+    parseInt(searchParams.get('price_max') || '1000')
+  ]);
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'relevance');
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +67,7 @@ const SearchPage = () => {
   
   useEffect(() => {
     const performSearch = async () => {
-      if (!searchQuery.trim()) {
+      if (!searchQuery.trim() && !searchParams.has('category') && !searchParams.has('location')) {
         setSearchResults([]);
         setLoading(false);
         return;
@@ -62,15 +79,27 @@ const SearchPage = () => {
       try {
         let query = supabase
           .from('items')
-          .select('*')
-          .ilike('title', `%${searchQuery}%`);
+          .select('*');
         
-        if (category && category !== 'all') { // Changed from empty string check to 'all' check
-          query = query.eq('category', category);
+        // Apply search query filter if provided
+        if (searchQuery.trim()) {
+          query = query.ilike('title', `%${searchQuery}%`);
         }
         
+        // Apply category filter if provided and not "all"
+        if (category && category !== 'all') {
+          query = query.eq('category', category.toLowerCase());
+        }
+        
+        // Apply location filter if provided and not "all"
+        if (location && location !== 'all') {
+          query = query.ilike('location', `%${location}%`);
+        }
+        
+        // Apply price range filter
         query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
         
+        // Apply sorting
         switch (sortBy) {
           case 'price_asc':
             query = query.order('price', { ascending: true });
@@ -93,6 +122,7 @@ const SearchPage = () => {
           throw error;
         }
         
+        console.log('Search results:', data?.length || 0, 'items found');
         setSearchResults(data || []);
       } catch (error: any) {
         console.error('Search error:', error);
@@ -107,13 +137,14 @@ const SearchPage = () => {
     };
     
     performSearch();
-  }, [searchQuery, category, priceRange, sortBy, toast]);
+  }, [searchQuery, category, location, priceRange, sortBy, toast, searchParams]);
   
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchParams({ 
       q: searchQuery,
       category: category,
+      location: location,
       price_min: priceRange[0].toString(),
       price_max: priceRange[1].toString(),
       sort: sortBy
@@ -156,9 +187,26 @@ const SearchPage = () => {
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem> {/* Changed from empty string to 'all' */}
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat.toLowerCase()}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="mb-4">
+              <h4 className="font-semibold mb-2">Location</h4>
+              <Select value={location} onValueChange={setLocation}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Locations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {locations.map((loc) => (
+                    <SelectItem key={loc} value={loc !== "All Locations" ? loc : "all"}>
+                      {loc}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -195,7 +243,14 @@ const SearchPage = () => {
           
           <div className="md:w-3/4">
             {loading ? (
-              <div className="text-center">Loading...</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(6)].map((_, index) => (
+                  <div 
+                    key={index}
+                    className="bg-gray-100 animate-pulse rounded-lg h-64"
+                  ></div>
+                ))}
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {searchResults.map((item: any) => (
@@ -210,7 +265,28 @@ const SearchPage = () => {
                   />
                 ))}
                 {searchResults.length === 0 && searchPerformed && (
-                  <div className="text-center col-span-full">No results found.</div>
+                  <div className="text-center col-span-full p-8">
+                    <div className="text-gray-400 mb-2">
+                      <SearchIcon size={48} className="mx-auto opacity-50" />
+                    </div>
+                    <h3 className="text-xl font-medium mb-1">No results found</h3>
+                    <p className="text-gray-500 mb-4">
+                      Try adjusting your search or filter criteria
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setCategory('all');
+                        setLocation('all');
+                        setPriceRange([0, 1000]);
+                        setSortBy('relevance');
+                        setSearchParams({});
+                      }}
+                    >
+                      Clear all filters
+                    </Button>
+                  </div>
                 )}
               </div>
             )}

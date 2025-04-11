@@ -6,13 +6,13 @@ import { BookIcon, LaptopIcon, ShirtIcon, HomeIcon, BriefcaseIcon, CoffeeIcon, S
 import { motion } from 'framer-motion';
 
 const categories = [
-  { name: "All Items", icon: ShoppingBagIcon, path: "/search?category=All%20Categories" },
-  { name: "Electronics", icon: LaptopIcon, path: "/search?category=Electronics" },
-  { name: "Textbooks", icon: BookIcon, path: "/search?category=Textbooks" },
-  { name: "Furniture", icon: HomeIcon, path: "/search?category=Furniture" },
-  { name: "Clothing", icon: ShirtIcon, path: "/search?category=Clothing" },
-  { name: "School Supplies", icon: BriefcaseIcon, path: "/search?category=School%20Supplies" },
-  { name: "Dorm Essentials", icon: CoffeeIcon, path: "/search?category=Dorm%20Essentials" },
+  { name: "All Items", icon: ShoppingBagIcon, path: "/search?category=all" },
+  { name: "Electronics", icon: LaptopIcon, path: "/search?category=electronics" },
+  { name: "Textbooks", icon: BookIcon, path: "/search?category=textbooks" },
+  { name: "Furniture", icon: HomeIcon, path: "/search?category=furniture" },
+  { name: "Clothing", icon: ShirtIcon, path: "/search?category=clothing" },
+  { name: "School Supplies", icon: BriefcaseIcon, path: "/search?category=school%20supplies" },
+  { name: "Dorm Essentials", icon: CoffeeIcon, path: "/search?category=dorm%20essentials" },
 ];
 
 const Categories = () => {
