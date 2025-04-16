@@ -29,7 +29,7 @@ const locations = [
   "Hostel C", 
   "Hostel D", 
   "Campus Center", 
-  "Library", 
+  "Kunene", 
   "Nchiiru", 
   "Kianjai"
 ];
