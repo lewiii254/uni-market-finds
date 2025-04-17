@@ -53,22 +53,22 @@ npm install
 npm run dev
 ```
 ### ✏️ Edit Directly on GitHub
-Navigate to the desired file in this repo
+- Navigate to the desired file in this repo
 
-Click the ✏️ Edit button (top right)
+= Click the ✏️ Edit button (top right)
 
-Make your changes and commit them directly to the branch
+- Make your changes and commit them directly to the branch
 
 ### 💻 Use GitHub Codespaces
-Go to the repo's main page
+- Go to the repo's main page
 
-Click the green Code button
+- Click the green Code button
 
-Select the Codespaces tab
+- Select the Codespaces tab
 
-Click "New codespace" to launch it
+- Click "New codespace" to launch it
 
-Make edits and commit when done
+- Make edits and commit when done
 
 ## 🧰 Tech Stack
 
