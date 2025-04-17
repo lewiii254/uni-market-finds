@@ -55,7 +55,7 @@ npm run dev
 ### ✏️ Edit Directly on GitHub
 - Navigate to the desired file in this repo
 
-= Click the ✏️ Edit button (top right)
+- Click the ✏️ Edit button (top right)
 
 - Make your changes and commit them directly to the branch
 
