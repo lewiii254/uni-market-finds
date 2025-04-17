@@ -1,4 +1,4 @@
-# 🚀 Kuza Market
+# 🚀 Kuza Market - College🏫 MarketPlace🛒
 
 Welcome to **Kuza Market** – a modern digital platform connecting Sellers and buyers across College! 🇰🇪 Whether you're selling second hand goods or buying them Kuza Market simplifies everything. ✨📲
 
